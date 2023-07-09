@@ -3,6 +3,7 @@ package postgres
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,17 +13,17 @@ import (
 	"time"
 
 	"github.com/alessio/shellescape"
-	"github.com/kellegous/reader/pkg/logging"
+	_ "github.com/lib/pq"
 )
 
 const (
 	defaultPgPath = "/usr/lib/postgresql/14"
+	pgUser        = "postgres"
 )
 
 type Server struct {
 	dataDir string
 	pgPath  string
-	proc    *os.Process
 }
 
 func Start(
@@ -57,21 +58,40 @@ func (s *Server) EnsureDatabase(
 	password string,
 ) error {
 	// TODO(knorton): limit name, username, password to valid characters
-	sql := fmt.Sprintf(`
+	q := fmt.Sprintf(`
 		CREATE DATABASE %s;
 		CREATE USER %s WITH ENCRYPTED PASSWORD '%s';
 		GRANT ALL PRIVILEGES ON DATABASE %s TO %s;`,
 		name, username, password, name, username)
-	return psql(ctx, "postgres", sql)
+	if err := psql(ctx, pgUser, q); err != nil {
+		return err
+	}
+
+	db, err := sql.Open(
+		"postgres",
+		fmt.Sprintf("dbname=%s user=%s password=%s sslmode=disable",
+			name,
+			username,
+			password))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if err := db.PingContext(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *Server) Stop() error {
-	logging.L(context.Background()).Info("stopping postgres")
-	return s.proc.Signal(os.Interrupt)
-}
-
-func (s *Server) Process() *os.Process {
-	return s.proc
+func (s *Server) Stop(ctx context.Context) error {
+	return suCommand(
+		ctx,
+		pgUser,
+		filepath.Join(s.pgPath, "bin/pg_ctl"),
+		"-D", s.dataDir,
+		"stop").Run()
 }
 
 func (s *Server) initDB(ctx context.Context) error {
@@ -80,7 +100,7 @@ func (s *Server) initDB(ctx context.Context) error {
 		return nil
 	}
 
-	uid, gid, err := getUser("postgres")
+	uid, gid, err := getUser(pgUser)
 	if err != nil {
 		return err
 	}
@@ -95,7 +115,7 @@ func (s *Server) initDB(ctx context.Context) error {
 
 	c := suCommand(
 		ctx,
-		"postgres",
+		pgUser,
 		filepath.Join(s.pgPath, "bin/initdb"),
 		"-D",
 		s.dataDir)
@@ -112,7 +132,7 @@ func (s *Server) waitForReady(
 	for {
 		c := suCommand(
 			ctx,
-			"postgres",
+			pgUser,
 			filepath.Join(s.pgPath, "bin/pg_isready"),
 			"-q")
 		if err := c.Run(); err == nil {
@@ -130,23 +150,22 @@ func (s *Server) waitForReady(
 func (s *Server) start(ctx context.Context) error {
 	c := suCommand(
 		ctx,
-		"postgres",
-		filepath.Join(s.pgPath, "bin/postgres"),
+		pgUser,
+		filepath.Join(s.pgPath, "bin/pg_ctl"),
 		"-D",
-		s.dataDir)
+		s.dataDir,
+		"start")
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 	c.Stdin = os.Stdin
 
-	if err := c.Start(); err != nil {
+	if err := c.Run(); err != nil {
 		return err
 	}
 
 	if err := s.waitForReady(ctx); err != nil {
 		return err
 	}
-
-	s.proc = c.Process
 
 	return nil
 }

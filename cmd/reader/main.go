@@ -41,7 +41,7 @@ func ensurePostgresReady(
 		cfg.Username,
 		cfg.Password,
 	); err != nil {
-		s.Stop()
+		s.Stop(ctx)
 		return nil, err
 	}
 
@@ -77,10 +77,9 @@ func main() {
 			zap.Error(err))
 		return
 	}
-	defer pg.Stop()
+	defer pg.Stop(context.Background())
 
-	lg.Info("postgres started",
-		zap.Int("pid", pg.Process().Pid))
+	lg.Info("postgres started", zap.Int("pid", 0))
 
 	// TODO(knorton): Start miniflux
 
