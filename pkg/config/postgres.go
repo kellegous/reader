@@ -1,21 +1,19 @@
 package config
 
 import (
-	"context"
 	"errors"
 	"path/filepath"
-
-	"github.com/kellegous/reader/pkg/logging"
-	"go.uber.org/zap"
 )
 
 const (
 	DefaultDataDir  = "db"
 	DefaultUsername = "reader"
+	DefaultDatabase = "reader"
 )
 
 type Postgres struct {
 	DataDir  string `yaml:"data-dir"`
+	Database string `yaml:"database"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 }
@@ -29,13 +27,15 @@ func (p *Postgres) apply(base string) error {
 		p.Username = DefaultUsername
 	}
 
+	if p.Database == "" {
+		p.Database = DefaultDatabase
+	}
+
 	if p.Password == "" {
 		return errors.New("postgres.password is required")
 	}
 
 	if !filepath.IsAbs(p.DataDir) {
-		logging.L(context.Background()).Info("making data dir absolute",
-			zap.String("base", base))
 		p.DataDir = filepath.Join(base, p.DataDir)
 	}
 

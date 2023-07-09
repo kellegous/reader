@@ -26,6 +26,28 @@ func (f *Flags) Register(fs *flag.FlagSet) {
 	)
 }
 
+func ensurePostgresReady(
+	ctx context.Context,
+	cfg *config.Postgres,
+) (*postgres.Server, error) {
+	s, err := postgres.Start(ctx, cfg.DataDir)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.EnsureDatabase(
+		ctx,
+		cfg.Database,
+		cfg.Username,
+		cfg.Password,
+	); err != nil {
+		s.Stop()
+		return nil, err
+	}
+
+	return s, nil
+}
+
 func main() {
 	var flags Flags
 	flags.Register(flag.CommandLine)
@@ -38,6 +60,7 @@ func main() {
 		lg.Fatal("unable to read config file",
 			zap.Error(err),
 			zap.String("config-file", flags.ConfigFile))
+		return
 	}
 
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -48,11 +71,13 @@ func main() {
 
 	// TODO(knorton): Join tailnet
 
-	pg, err := postgres.Start(ctx, cfg.Postgres.DataDir)
+	pg, err := ensurePostgresReady(ctx, &cfg.Postgres)
 	if err != nil {
-		lg.Fatal("unable to start postgres",
+		lg.Fatal("unable to ensure postgres is ready",
 			zap.Error(err))
+		return
 	}
+	defer pg.Stop()
 
 	lg.Info("postgres started",
 		zap.Int("pid", pg.Process().Pid))

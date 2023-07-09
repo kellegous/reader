@@ -1,14 +1,18 @@
 package postgres
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/alessio/shellescape"
+	"github.com/kellegous/reader/pkg/logging"
 )
 
 const (
@@ -46,12 +50,24 @@ func Start(
 	return s, nil
 }
 
-func EnsureDatabase(
+func (s *Server) EnsureDatabase(
+	ctx context.Context,
 	name string,
 	username string,
 	password string,
 ) error {
-	return nil
+	// TODO(knorton): limit name, username, password to valid characters
+	sql := fmt.Sprintf(`
+		CREATE DATABASE %s;
+		CREATE USER %s WITH ENCRYPTED PASSWORD '%s';
+		GRANT ALL PRIVILEGES ON DATABASE %s TO %s;`,
+		name, username, password, name, username)
+	return psql(ctx, "postgres", sql)
+}
+
+func (s *Server) Stop() error {
+	logging.L(context.Background()).Info("stopping postgres")
+	return s.proc.Signal(os.Interrupt)
 }
 
 func (s *Server) Process() *os.Process {
@@ -90,6 +106,27 @@ func (s *Server) initDB(ctx context.Context) error {
 	return c.Run()
 }
 
+func (s *Server) waitForReady(
+	ctx context.Context,
+) error {
+	for {
+		c := suCommand(
+			ctx,
+			"postgres",
+			filepath.Join(s.pgPath, "bin/pg_isready"),
+			"-q")
+		if err := c.Run(); err == nil {
+			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(100 * time.Millisecond):
+		}
+	}
+}
+
 func (s *Server) start(ctx context.Context) error {
 	c := suCommand(
 		ctx,
@@ -101,8 +138,11 @@ func (s *Server) start(ctx context.Context) error {
 	c.Stderr = os.Stderr
 	c.Stdin = os.Stdin
 
-	// TODO(knorton): use pg_ready to poll?
 	if err := c.Start(); err != nil {
+		return err
+	}
+
+	if err := s.waitForReady(ctx); err != nil {
 		return err
 	}
 
@@ -124,6 +164,21 @@ func suCommand(
 		"-c",
 		shellescape.QuoteCommand(args),
 	)
+}
+
+func psql(
+	ctx context.Context,
+	user string,
+	sql string,
+) error {
+	c := suCommand(
+		ctx,
+		user,
+		filepath.Join(defaultPgPath, "bin/psql"))
+	c.Stdin = bytes.NewBufferString(sql)
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	return c.Run()
 }
 
 func getUser(username string) (int, int, error) {
