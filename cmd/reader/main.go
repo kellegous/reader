@@ -130,7 +130,7 @@ func main() {
 		Hostname: cfg.Tailscale.Hostname,
 		Dir:      cfg.Tailscale.StateDir,
 		Logf: func(format string, args ...any) {
-			// lg.Info(fmt.Sprintf(format, args...))
+			lg.Info(fmt.Sprintf(format, args...))
 		},
 	})
 	if err != nil {
