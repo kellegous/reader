@@ -1,13 +1,14 @@
 package config
 
 import (
-	"errors"
+	"os"
 	"path/filepath"
 )
 
 const (
 	DefaultTailscaleHostname = "reader"
 	DefaultTailscaleStateDir = "tailscale"
+	TailscaleAuthKeyEnvKey   = "TAILSCALE_AUTHKEY"
 )
 
 type Tailscale struct {
@@ -22,7 +23,7 @@ func (t *Tailscale) apply(base string) error {
 	}
 
 	if t.AuthKey == "" {
-		return errors.New("tailscale.auth-key is required")
+		t.AuthKey = os.Getenv(TailscaleAuthKeyEnvKey)
 	}
 
 	if t.StateDir == "" {
