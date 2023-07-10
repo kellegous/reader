@@ -13,6 +13,7 @@ reader-$(TAG).tar: Dockerfile $(shell find cmd pkg -type f) bin/buildimg
 	bin/buildimg --tag=$(TAG) --target=linux/amd64:$@ kellegous/reader
 
 publish: reader-$(TAG).tar
+	sup host image load @ $<
 
 clean:
 	rm -rf bin
