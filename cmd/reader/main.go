@@ -3,14 +3,26 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
+	"strings"
+	"time"
 
+	"github.com/kellegous/tsweb"
 	"go.uber.org/zap"
+	"tailscale.com/ipn/ipnstate"
+	"tailscale.com/tsnet"
 
 	"github.com/kellegous/reader/pkg/config"
 	"github.com/kellegous/reader/pkg/logging"
+	"github.com/kellegous/reader/pkg/miniflux"
 	"github.com/kellegous/reader/pkg/postgres"
+	"github.com/kellegous/reader/pkg/web"
+)
+
+const (
+	backendAddr = "127.0.0.1:9090"
 )
 
 type Flags struct {
@@ -48,6 +60,50 @@ func ensurePostgresReady(
 	return s, nil
 }
 
+func startMiniflux(
+	ctx context.Context,
+	baseURL string,
+	cfg *config.Info,
+) (*miniflux.Server, error) {
+	return miniflux.Start(
+		ctx,
+		miniflux.WithAdmin(
+			cfg.Miniflux.AdminUsername,
+			cfg.Miniflux.AdminPassword),
+		miniflux.WithDatabase(
+			cfg.Postgres.Database,
+			cfg.Postgres.Username, cfg.Postgres.Password),
+		miniflux.WithRunMigrations(true),
+		miniflux.WithListenAddress(backendAddr),
+		miniflux.WithBaseURL(baseURL),
+	)
+}
+
+func getDomain(
+	ctx context.Context,
+	svc *tsweb.Service,
+) (string, error) {
+	c, err := svc.LocalClient()
+	if err != nil {
+		return "", err
+	}
+
+	var status *ipnstate.Status
+	for {
+		status, err = c.Status(ctx)
+		if err != nil {
+			return "", err
+		}
+		if status.BackendState == "Running" {
+			break
+		}
+
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	return strings.Trim(status.Self.DNSName, "."), nil
+}
+
 func main() {
 	var flags Flags
 	flags.Register(flag.CommandLine)
@@ -69,19 +125,73 @@ func main() {
 	lg.Info("starting reader",
 		zap.String("postgress.data-dir", cfg.Postgres.DataDir))
 
-	// TODO(knorton): Join tailnet
+	svc, err := tsweb.Start(&tsnet.Server{
+		AuthKey:  cfg.Tailscale.AuthKey,
+		Hostname: cfg.Tailscale.Hostname,
+		Dir:      cfg.Tailscale.StateDir,
+		Logf: func(format string, args ...any) {
+			// lg.Info(fmt.Sprintf(format, args...))
+		},
+	})
+	if err != nil {
+		lg.Fatal("unable to start tailscale",
+			zap.Error(err))
+	}
+	defer svc.Close()
+
+	ch := make(chan error, 1)
+
+	go func() {
+		ch <- svc.RedirectHTTP(ctx)
+	}()
+
+	l, err := svc.ListenTLS("tcp", ":https")
+	if err != nil {
+		lg.Fatal("unable to listen for https",
+			zap.Error(err))
+	}
+	defer l.Close()
+
+	go func() {
+		ch <- web.Serve(ctx, l, "http://"+backendAddr)
+	}()
 
 	pg, err := ensurePostgresReady(ctx, &cfg.Postgres)
 	if err != nil {
 		lg.Fatal("unable to ensure postgres is ready",
 			zap.Error(err))
-		return
 	}
 	defer pg.Stop(context.Background())
 
 	lg.Info("postgres started", zap.Int("pid", 0))
 
-	// TODO(knorton): Start miniflux
+	domain, err := getDomain(ctx, svc)
+	if err != nil {
+		lg.Fatal("unable to get tailscale domain",
+			zap.Error(err))
+	}
+	lg.Info("tailscale domain", zap.String("domain", domain))
 
-	<-ctx.Done()
+	mf, err := startMiniflux(ctx,
+		fmt.Sprintf("https://%s/", domain),
+		&cfg)
+	if err != nil {
+		lg.Fatal("unable to start miniflux",
+			zap.Error(err))
+	}
+	defer mf.Stop()
+
+	select {
+	case <-ctx.Done():
+	case err := <-ch:
+		if err != nil {
+			lg.Fatal("could not serve http/https",
+				zap.Error(err))
+		}
+	}
+
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		os.Exit(0)
+	}()
 }

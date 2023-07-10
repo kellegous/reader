@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -euo pipefail
+
+HERE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+ROOT=$( cd $HERE/.. && pwd )
+
+docker run -ti --rm \
+	--platform "linux/$(go env GOARCH)" \
+	-v $ROOT:/src \
+	-p 8080:8080 \
+	-w /src \
+	kellegous/build:b58c3fe8 \
+	/bin/bash /src/etc/setup-dev.sh
