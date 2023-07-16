@@ -52,3 +52,14 @@ func WithRunMigrations(v bool) Option {
 		return nil
 	}
 }
+
+func WithDebugLogging(v bool) Option {
+	return func(s *Server) error {
+		if v {
+			s.env["DEBUG"] = "1"
+		} else {
+			delete(s.env, "DEBUG")
+		}
+		return nil
+	}
+}

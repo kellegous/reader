@@ -27,6 +27,7 @@ const (
 
 type Flags struct {
 	ConfigFile string
+	Debug      bool
 }
 
 func (f *Flags) Register(fs *flag.FlagSet) {
@@ -35,6 +36,12 @@ func (f *Flags) Register(fs *flag.FlagSet) {
 		"config-file",
 		"reader.yaml",
 		"Path to the config file",
+	)
+	fs.BoolVar(
+		&f.Debug,
+		"debug",
+		false,
+		"Enable debug logging",
 	)
 }
 
@@ -64,6 +71,7 @@ func startMiniflux(
 	ctx context.Context,
 	baseURL string,
 	cfg *config.Info,
+	debug bool,
 ) (*miniflux.Server, error) {
 	return miniflux.Start(
 		ctx,
@@ -76,6 +84,7 @@ func startMiniflux(
 		miniflux.WithRunMigrations(true),
 		miniflux.WithListenAddress(backendAddr),
 		miniflux.WithBaseURL(baseURL),
+		miniflux.WithDebugLogging(debug),
 	)
 }
 
@@ -174,7 +183,8 @@ func main() {
 
 	mf, err := startMiniflux(ctx,
 		fmt.Sprintf("https://%s/", domain),
-		&cfg)
+		&cfg,
+		flags.Debug)
 	if err != nil {
 		lg.Fatal("unable to start miniflux",
 			zap.Error(err))
