@@ -1,15 +1,15 @@
 module github.com/kellegous/reader
 
-go 1.21.0
+go 1.21.1
 
 require (
 	github.com/alessio/shellescape v1.4.2
 	github.com/kellegous/buildimg v1.1.0
 	github.com/kellegous/tsweb v0.1.0
 	github.com/lib/pq v1.10.9
-	go.uber.org/zap v1.25.0
+	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
-	tailscale.com v1.48.1
+	tailscale.com v1.48.2
 )
 
 require (
