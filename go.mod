@@ -1,6 +1,6 @@
 module github.com/kellegous/reader
 
-go 1.21.3
+go 1.21.4
 
 require (
 	github.com/alessio/shellescape v1.4.2
@@ -9,7 +9,7 @@ require (
 	github.com/lib/pq v1.10.9
 	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
-	tailscale.com v1.52.1
+	tailscale.com v1.54.0
 )
 
 require (
@@ -41,6 +41,8 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/nftables v0.1.1-0.20230115205135-9aa6fdf5a28c // indirect
 	github.com/google/uuid v1.3.1 // indirect
+	github.com/gorilla/csrf v1.7.1 // indirect
+	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
 	github.com/illarion/gonotify v1.0.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -57,6 +59,8 @@ require (
 	github.com/miekg/dns v1.1.56 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/safchain/ethtool v0.3.0 // indirect
 	github.com/spf13/cobra v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tailscale/certstore v0.1.1-0.20231020161753-77811a65f4ff // indirect
@@ -65,7 +69,8 @@ require (
 	github.com/tailscale/goupnp v1.0.1-0.20210804011211-c64d0f06ea05 // indirect
 	github.com/tailscale/hujson v0.0.0-20221223112325-20486734a56a // indirect
 	github.com/tailscale/netlink v1.1.1-0.20211101221916-cabfb018fe85 // indirect
-	github.com/tailscale/wireguard-go v0.0.0-20230929223258-2f6748dc88e7 // indirect
+	github.com/tailscale/web-client-prebuilt v0.0.0-20231114171715-25f8d12b3c2d // indirect
+	github.com/tailscale/wireguard-go v0.0.0-20231101022006-db7604d1aa90 // indirect
 	github.com/tcnksm/go-httpstat v0.2.0 // indirect
 	github.com/u-root/uio v0.0.0-20230305220412-3e8cd9d6bf63 // indirect
 	github.com/vishvananda/netlink v1.2.1-beta.2 // indirect
