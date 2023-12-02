@@ -9,7 +9,7 @@ require (
 	github.com/lib/pq v1.10.9
 	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
-	tailscale.com v1.54.0
+	tailscale.com v1.54.1
 )
 
 require (
