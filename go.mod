@@ -1,6 +1,6 @@
 module github.com/kellegous/reader
 
-go 1.22.0
+go 1.22.2
 
 require (
 	github.com/alessio/shellescape v1.4.2
@@ -9,7 +9,7 @@ require (
 	github.com/lib/pq v1.10.9
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v3 v3.0.1
-	tailscale.com v1.62.1
+	tailscale.com v1.64.1
 )
 
 require (
@@ -30,11 +30,13 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.26.7 // indirect
 	github.com/aws/smithy-go v1.19.0 // indirect
+	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/coreos/go-iptables v0.7.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/dblohm7/wingoes v0.0.0-20240119213807-a09d6be7affa // indirect
 	github.com/digitalocean/go-smbios v0.0.0-20180907143718-390a4f403a8e // indirect
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
+	github.com/gaissmai/bart v0.4.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.1-0.20230522191255-76236955d466 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
