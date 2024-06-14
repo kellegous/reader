@@ -4,15 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"time"
 
-	"github.com/kellegous/tsweb"
 	"go.uber.org/zap"
-	"tailscale.com/ipn/ipnstate"
-	"tailscale.com/tsnet"
 
 	"github.com/kellegous/reader/pkg/config"
 	"github.com/kellegous/reader/pkg/logging"
@@ -88,31 +85,6 @@ func startMiniflux(
 	)
 }
 
-func getDomain(
-	ctx context.Context,
-	svc *tsweb.Service,
-) (string, error) {
-	c, err := svc.LocalClient()
-	if err != nil {
-		return "", err
-	}
-
-	var status *ipnstate.Status
-	for {
-		status, err = c.Status(ctx)
-		if err != nil {
-			return "", err
-		}
-		if status.BackendState == "Running" {
-			break
-		}
-
-		time.Sleep(100 * time.Millisecond)
-	}
-
-	return strings.Trim(status.Self.DNSName, "."), nil
-}
-
 func main() {
 	var flags Flags
 	flags.Register(flag.CommandLine)
@@ -134,29 +106,11 @@ func main() {
 	lg.Info("starting reader",
 		zap.String("postgress.data-dir", cfg.Postgres.DataDir))
 
-	svc, err := tsweb.Start(&tsnet.Server{
-		AuthKey:  cfg.Tailscale.AuthKey,
-		Hostname: cfg.Tailscale.Hostname,
-		Dir:      cfg.Tailscale.StateDir,
-		Logf: func(format string, args ...any) {
-			lg.Info(fmt.Sprintf(format, args...))
-		},
-	})
-	if err != nil {
-		lg.Fatal("unable to start tailscale",
-			zap.Error(err))
-	}
-	defer svc.Close()
-
 	ch := make(chan error, 1)
 
-	go func() {
-		ch <- svc.RedirectHTTP(ctx)
-	}()
-
-	l, err := svc.ListenTLS("tcp", ":https")
+	l, err := net.Listen("tcp", cfg.Web.Addr)
 	if err != nil {
-		lg.Fatal("unable to listen for https",
+		lg.Fatal("unable to listen for http",
 			zap.Error(err))
 	}
 	defer l.Close()
@@ -174,15 +128,8 @@ func main() {
 
 	lg.Info("postgres started", zap.Int("pid", 0))
 
-	domain, err := getDomain(ctx, svc)
-	if err != nil {
-		lg.Fatal("unable to get tailscale domain",
-			zap.Error(err))
-	}
-	lg.Info("tailscale domain", zap.String("domain", domain))
-
 	mf, err := startMiniflux(ctx,
-		fmt.Sprintf("https://%s/", domain),
+		fmt.Sprintf("https://%s/", cfg.Web.Hostname),
 		&cfg,
 		flags.Debug)
 	if err != nil {

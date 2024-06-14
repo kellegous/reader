@@ -17,7 +17,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 apt update
 
-apt install -y postgresql postgresql-contrib sudo
+apt install -y postgresql sudo
 
 apt clean
 

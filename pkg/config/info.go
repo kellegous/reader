@@ -9,9 +9,9 @@ import (
 )
 
 type Info struct {
-	Tailscale Tailscale `yaml:"tailscale"`
-	Postgres  Postgres  `yaml:"postgres"`
-	Miniflux  Miniflux  `yaml:"miniflux"`
+	Postgres Postgres `yaml:"postgres"`
+	Miniflux Miniflux `yaml:"miniflux"`
+	Web      Web      `yaml:"web"`
 }
 
 func (n *Info) Read(r io.Reader, base string) error {
@@ -27,15 +27,15 @@ func (n *Info) Read(r io.Reader, base string) error {
 		return err
 	}
 
-	if err := n.Tailscale.apply(base); err != nil {
-		return err
-	}
-
 	if err := n.Postgres.apply(base); err != nil {
 		return err
 	}
 
 	if err := n.Miniflux.apply(base); err != nil {
+		return err
+	}
+
+	if err := n.Web.apply(); err != nil {
 		return err
 	}
 
