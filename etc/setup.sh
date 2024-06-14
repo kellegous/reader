@@ -37,7 +37,7 @@ esac
 
 apt-get update
 
-apt-get install -y postgresql postgresql-contrib sudo ca-certificates curl
+apt-get install -y postgresql postgresql-contrib sudo ca-certificates curl jq iptables
 
 apt-get clean
 
