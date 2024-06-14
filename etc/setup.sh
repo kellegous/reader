@@ -35,9 +35,14 @@ case "$ARCH" in
 	;;
 esac
 
+
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | tee /etc/apt/sources.list.d/postgresql.list
+
 apt-get update
 
-apt-get install -y postgresql postgresql-contrib sudo ca-certificates curl jq iptables
+apt-get install -y postgresql-14 sudo ca-certificates curl jq iptables
 
 apt-get clean
 
