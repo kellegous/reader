@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	defaultPgPath = "/usr/lib/postgresql/14"
+	defaultPgPath = "/usr/lib/postgresql/15"
 	pgUser        = "postgres"
 )
 
