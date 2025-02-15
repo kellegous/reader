@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/alessio/shellescape"
+	"al.essio.dev/pkg/shellescape"
 	_ "github.com/lib/pq"
 )
 
