@@ -11,11 +11,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kellegous/reader/pkg/config"
-	"github.com/kellegous/reader/pkg/logging"
-	"github.com/kellegous/reader/pkg/miniflux"
-	"github.com/kellegous/reader/pkg/postgres"
-	"github.com/kellegous/reader/pkg/web"
+	"github.com/kellegous/reader/internal/config"
+	"github.com/kellegous/reader/internal/logging"
+	"github.com/kellegous/reader/internal/miniflux"
+	"github.com/kellegous/reader/internal/postgres"
+	"github.com/kellegous/reader/internal/web"
 )
 
 const (
