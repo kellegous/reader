@@ -20,7 +20,7 @@ bin/buildimg:
 	go build -o $@ github.com/kellegous/buildimg
 
 reader.tar: Dockerfile $(shell find cmd pkg -type f) bin/buildimg
-	bin/buildimg --tag=$(TAG) --target=linux/amd64:$@ --build-arg=SHA=${SHA} --build-arg=BUILD_TIME=${BUILD_TIME} kellegous/reader
+	bin/buildimg --tag=$(shell git rev-parse --short HEAD) --target=linux/amd64:$@ --build-arg=SHA=${SHA} --build-arg=BUILD_TIME=${BUILD_TIME} kellegous/reader
 
 publish: reader.tar
 	sup host image load @ $<
