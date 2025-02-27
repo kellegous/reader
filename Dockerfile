@@ -1,8 +1,11 @@
 FROM kellegous/build:f1799259 AS build
 
+ARG SHA
+ARG BUILD_TIME
+
 COPY . /src
 
-RUN cd /src && make clean ALL
+RUN cd /src && make SHA=${SHA} BUILD_TIME=${BUILD_TIME} clean ALL
 
 FROM lsiobase/debian:bookworm
 
