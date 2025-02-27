@@ -7,8 +7,8 @@ github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 h1:El6M4kTTCOh6aBiKaU
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3pAXIBCelhxNneeOaAeabZDe5s4K6zSpQ=
 github.com/inconshreveable/mousetrap v1.0.1 h1:U3uMjPSQEBMNp1lFxmllqCPM6P5u/Xq7Pgzkat/bFNc=
 github.com/inconshreveable/mousetrap v1.0.1/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/kellegous/buildimg v1.1.0 h1:/L531UYIuLs9NkzjPtISK/lN7cQeH0FWZ93fwog9w/g=
-github.com/kellegous/buildimg v1.1.0/go.mod h1:vZ+/Erxq3l6gFlU026D+pE8WAUvI3EGdpk0knzaJRyE=
+github.com/kellegous/buildimg v1.2.0 h1:tuF75taWrEMni+kuM1QbhyjTxwqcU/xRJ482r1JCcmE=
+github.com/kellegous/buildimg v1.2.0/go.mod h1:vZ+/Erxq3l6gFlU026D+pE8WAUvI3EGdpk0knzaJRyE=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	al.essio.dev/pkg/shellescape v1.5.1
-	github.com/kellegous/buildimg v1.1.0
+	github.com/kellegous/buildimg v1.2.0
 	github.com/lib/pq v1.10.9
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v3 v3.0.1
