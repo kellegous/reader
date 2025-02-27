@@ -9,7 +9,7 @@ endif
 GOMOD := $(shell go list -m)
 GOBUILD_FLAGS := -ldflags "-X $(GOMOD)/internal/build.vcsInfo=$(SHA),$(BUILD_TIME)"
 
-.PHONY: all clean publish
+.PHONY: all clean publish reader.tar
 
 ALL: bin/reader
 
@@ -19,7 +19,7 @@ bin/%: cmd/%/main.go $(shell find pkg -name '*.go')
 bin/buildimg:
 	go build -o $@ github.com/kellegous/buildimg
 
-reader.tar: Dockerfile $(shell find cmd pkg -type f) bin/buildimg
+reader.tar: bin/buildimg
 	bin/buildimg --tag=$(shell git rev-parse --short HEAD) --target=linux/amd64:$@ --build-arg=SHA=${SHA} --build-arg=BUILD_TIME=${BUILD_TIME} kellegous/reader
 
 publish: reader.tar
