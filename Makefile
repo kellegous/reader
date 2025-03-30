@@ -16,14 +16,5 @@ ALL: bin/reader
 bin/%: cmd/%/main.go $(shell find internal -name '*.go')
 	go build -o $@ $(GOBUILD_FLAGS) ./cmd/$*
 
-bin/buildimg:
-	GOBIN="$(CURDIR)/bin" go install github.com/kellegous/buildimg@latest
-
-reader.tar: bin/buildimg
-	bin/buildimg --tag=$(shell git rev-parse --short HEAD) --target=linux/amd64:$@ --build-arg=SHA=${SHA} --build-arg=BUILD_TIME=${BUILD_TIME} kellegous/reader
-
-publish: reader.tar
-	sup host image load @ $<
-
 clean:
 	rm -rf bin
