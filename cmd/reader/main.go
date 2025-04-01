@@ -9,10 +9,10 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/kellegous/glue/logging"
 	"go.uber.org/zap"
 
 	"github.com/kellegous/reader/internal/config"
-	"github.com/kellegous/reader/internal/logging"
 	"github.com/kellegous/reader/internal/miniflux"
 	"github.com/kellegous/reader/internal/postgres"
 	"github.com/kellegous/reader/internal/web"

@@ -1,6 +1,6 @@
 module github.com/kellegous/reader
 
-go 1.24.0
+go 1.24.1
 
 require (
 	al.essio.dev/pkg/shellescape v1.5.1
@@ -9,4 +9,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require go.uber.org/multierr v1.10.0 // indirect
+require (
+	github.com/kellegous/glue v0.9.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
+)
