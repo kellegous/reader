@@ -1,6 +1,6 @@
 module github.com/kellegous/reader
 
-go 1.24.2
+go 1.24.3
 
 require (
 	al.essio.dev/pkg/shellescape v1.6.0
