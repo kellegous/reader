@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-MINIFLUX_VERSION=2.2.8
+MINIFLUX_VERSION=2.2.9
 
 install_miniflux() {
 	local VERSION=$1
