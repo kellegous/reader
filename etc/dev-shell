@@ -5,10 +5,12 @@ set -euo pipefail
 HERE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ROOT=$( cd $HERE/.. && pwd )
 
+# kellegous/build source can be found at:
+# https://github.com/kellegous/docker-images/tree/master/build
 docker run -ti --rm \
 	--platform "linux/$(go env GOARCH)" \
 	-v $ROOT:/src \
 	-p 8080:8080 \
 	-w /src \
-	kellegous/build:0d98364e \
+	kellegous/build:f1799259 \
 	/bin/bash /src/etc/setup-dev.sh

@@ -1,0 +1,10 @@
+miniflux:
+  # these are the credentials used to login as admin to miniflux.
+  admin-username: miniflux
+  admin-password: your_own_secret_used_to_login_to_miniflux
+postgres:
+  # miniflux will use this to login to postgres.
+  password: your_own_secret_used_as_postgres_password
+web:
+  # set this to the hostname you intend to serve miniflux on.
+  hostname: localhost:8080
