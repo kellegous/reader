@@ -32,7 +32,7 @@ docker build -t reader .
 ### Run the container
 
 ```bash
-docker run -d \
+docker run -ti --rm \
   --name reader \
   -p 8080:8080 \
   -v $(pwd):/data \
@@ -59,7 +59,13 @@ bin/reader --config-file=reader.yaml
 
 ### Raw dogging it locally
 
-The only reason that `./etc/dev-shell` exists is to make it easy to have an isolated postgres database. If you already have postgres installed on your machine, you can use that instead. Be aware, though, that `reader` opens both miniflux and postgres as subproceesses, so if you already run postgres on your machine, that might be a problem.
+The only reason that `./etc/dev-shell` exists is to make it easy to have an isolated postgres database. If you already have postgres installed on your machine, you can use that instead. Be aware, though, that `reader` opens both miniflux and postgres as subproceesses, so if you already run postgres on your machine, that might be a problem. Your mileage may vary.
+
+```bash
+make
+
+bin/reader --config-file=reader.yaml
+```
 
 ## Author(s)
 
