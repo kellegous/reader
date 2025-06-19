@@ -12,5 +12,5 @@ docker run -ti --rm \
 	-v $ROOT:/src \
 	-p 8080:8080 \
 	-w /src \
-	kellegous/build:f1799259 \
+	kellegous/build:751a8adc \
 	/bin/bash /src/etc/setup-dev.sh
