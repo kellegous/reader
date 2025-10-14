@@ -31,7 +31,7 @@ func (n *Info) Read(r io.Reader, base string) error {
 		return err
 	}
 
-	if err := n.Miniflux.apply(base); err != nil {
+	if err := n.Miniflux.apply(); err != nil {
 		return err
 	}
 

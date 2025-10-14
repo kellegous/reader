@@ -7,7 +7,7 @@ type Miniflux struct {
 	AdminPassword string `yaml:"admin-password"`
 }
 
-func (m *Miniflux) apply(base string) error {
+func (m *Miniflux) apply() error {
 	if m.AdminUsername == "" {
 		return errors.New("miniflux.admin-username is required")
 	}
