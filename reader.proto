@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+option go_package = "github.com/kellegous/reader";
+
+service Reader {
+  rpc CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+}
