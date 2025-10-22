@@ -9,12 +9,13 @@ import (
 
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/kellegous/reader/internal/config"
 	"github.com/kellegous/reader/internal/miniflux"
 	"github.com/kellegous/reader/internal/postgres"
 	"github.com/kellegous/reader/internal/web"
-	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 )
 
 const backendAddr = "127.0.0.1:9090"
