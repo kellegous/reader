@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/kellegous/reader"
 )
 
 func Serve(
@@ -21,6 +23,7 @@ func Serve(
 	m := http.NewServeMux()
 
 	m.Handle("/", httputil.NewSingleHostReverseProxy(beURL))
+	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{}))
 
 	return http.Serve(l, m)
 }

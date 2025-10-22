@@ -2,3 +2,5 @@
 /db
 /tailscale
 /reader.yaml
+/*.pb.go
+/*.twirp.go

@@ -10,6 +10,8 @@ BE_PROTOS := \
 
 .PHONY: all clean
 
+.PRECIOUS: $(BE_PROTOS)
+
 ALL: bin/reader
 
 bin/%: cmd/%/main.go $(BE_PROTOS) $(shell find internal -name '*.go')
