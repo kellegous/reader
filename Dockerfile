@@ -12,4 +12,4 @@ RUN /setup.sh && rm /setup.sh
 
 COPY --from=build /src/bin/reader /app/bin/reader
 
-CMD ["/app/bin/reader", "--config-file=/data/reader.yaml"]
+CMD ["/app/bin/reader", "server", "--config-file=/data/reader.yaml"]

@@ -1,16 +1,38 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-set -euo pipefail
+import argparse
+import os
+import sys
+import subprocess
 
-HERE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-ROOT=$( cd $HERE/.. && pwd )
+parser = argparse.ArgumentParser()
+parser.add_argument("--port", type=int, default=6020)
+args = parser.parse_args()
 
-# kellegous/build source can be found at:
-# https://github.com/kellegous/docker-images/tree/master/build
-docker run -ti --rm \
-	--platform "linux/$(go env GOARCH)" \
-	-v $ROOT:/src \
-	-p 8080:8080 \
-	-w /src \
-	kellegous/build:751a8adc \
-	/bin/bash /src/etc/setup-dev.sh
+arch = subprocess.run(
+    ["go", "env", "GOARCH"], capture_output=True, text=True
+).stdout.strip()
+
+here = os.path.dirname(os.path.abspath(__file__))
+root = os.path.dirname(here)
+
+subprocess.run(
+    [
+        "docker",
+        "run",
+        "-ti",
+        "--rm",
+        "--platform",
+        f"linux/{arch}",
+        "-v",
+        f"{root}:/src",
+        "-p",
+        f"{args.port}:8080",
+        "-w",
+        "/src",
+        "kellegous/build:751a8adc",
+        "/bin/bash",
+        "/src/etc/setup-dev.sh",
+    ],
+    check=True,
+)
