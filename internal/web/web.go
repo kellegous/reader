@@ -8,14 +8,15 @@ import (
 	"net/url"
 
 	"github.com/kellegous/reader"
+	"github.com/kellegous/reader/internal/miniflux"
 )
 
 func Serve(
 	ctx context.Context,
 	l net.Listener,
-	be string,
+	ms *miniflux.Server,
 ) error {
-	beURL, err := url.Parse(be)
+	beURL, err := url.Parse(ms.BaseURL())
 	if err != nil {
 		return err
 	}
@@ -23,7 +24,9 @@ func Serve(
 	m := http.NewServeMux()
 
 	m.Handle("/", httputil.NewSingleHostReverseProxy(beURL))
-	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{}))
+	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{
+		client: ms.Client(),
+	}))
 
 	return http.Serve(l, m)
 }

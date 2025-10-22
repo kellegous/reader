@@ -1,6 +1,12 @@
 package miniflux
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+
+	"github.com/kellegous/poop"
+	"miniflux.app/v2/client"
+)
 
 type Option func(*Server) error
 
@@ -19,9 +25,29 @@ func WithDatabase(
 	}
 }
 
+func toBaseURL(addr string) (string, error) {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return "", err
+	} else if port == "" {
+		return "", poop.New("no port provided")
+	}
+
+	if host == "" {
+		host = "localhost"
+	}
+
+	return fmt.Sprintf("http://%s:%s", host, port), nil
+}
+
 func WithListenAddress(addr string) Option {
 	return func(s *Server) error {
+		url, err := toBaseURL(addr)
+		if err != nil {
+			return poop.Chain(err)
+		}
 		s.env["LISTEN_ADDR"] = addr
+		s.baseURL = url
 		return nil
 	}
 }
@@ -38,6 +64,11 @@ func WithAdmin(username string, password string) Option {
 		s.env["CREATE_ADMIN"] = "1"
 		s.env["ADMIN_USERNAME"] = username
 		s.env["ADMIN_PASSWORD"] = password
+
+		s.opts = []client.Option{
+			client.WithCredentials(username, password),
+		}
+
 		return nil
 	}
 }

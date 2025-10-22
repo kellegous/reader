@@ -4,15 +4,29 @@ import (
 	"context"
 	"os"
 	"os/exec"
+
+	"miniflux.app/v2/client"
 )
 
 type Server struct {
-	env  map[string]string
-	proc *os.Process
+	env     map[string]string
+	proc    *os.Process
+	baseURL string
+	opts    []client.Option
 }
 
 func (s *Server) Stop() error {
 	return s.proc.Kill()
+}
+
+func (s *Server) Client(opts ...client.Option) *client.Client {
+	return client.NewClientWithOptions(
+		s.baseURL,
+		append(s.opts, opts...)...)
+}
+
+func (s *Server) BaseURL() string {
+	return s.baseURL
 }
 
 func Start(ctx context.Context, opts ...Option) (*Server, error) {

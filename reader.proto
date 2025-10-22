@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package reader;
+
 import "google/protobuf/empty.proto";
 option go_package = "github.com/kellegous/reader";
 

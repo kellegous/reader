@@ -55,18 +55,6 @@ func runServer(cmd *cobra.Command, configFile string, debug bool) error {
 	lg.Info("starting reader",
 		zap.String("postgress.data-dir", cfg.Postgres.DataDir))
 
-	ch := make(chan error, 1)
-
-	l, err := net.Listen("tcp", cfg.Web.Addr)
-	if err != nil {
-		return poop.Chain(err)
-	}
-	defer l.Close()
-
-	go func() {
-		ch <- web.Serve(ctx, l, "http://"+backendAddr)
-	}()
-
 	pg, err := ensurePostgresReady(ctx, &cfg.Postgres)
 	if err != nil {
 		return poop.Chain(err)
@@ -85,6 +73,18 @@ func runServer(cmd *cobra.Command, configFile string, debug bool) error {
 		return poop.Chain(err)
 	}
 	defer mf.Stop()
+
+	ch := make(chan error, 1)
+
+	l, err := net.Listen("tcp", cfg.Web.Addr)
+	if err != nil {
+		return poop.Chain(err)
+	}
+	defer l.Close()
+
+	go func() {
+		ch <- web.Serve(ctx, l, mf)
+	}()
 
 	select {
 	case <-ctx.Done():
