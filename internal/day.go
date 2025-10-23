@@ -16,3 +16,7 @@ func (d Day) Add(days int) Day {
 func (d Day) String() string {
 	return time.Time(d).Format("2006-01-02")
 }
+
+func (d Day) AsTime() time.Time {
+	return time.Time(d)
+}

@@ -1,11 +1,22 @@
 package internal
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Week time.Time
 
+func (w Week) BeginsAt() time.Time {
+	return Day(w).AsTime()
+}
+
+func (w Week) EndsAt() time.Time {
+	return w.BeginsAt().AddDate(0, 0, 7).Add(-1 * time.Nanosecond)
+}
+
 func (w Week) String() string {
-	return Day(w).String()
+	return fmt.Sprintf("%s - %s", Day(w.BeginsAt()), Day(w.EndsAt()))
 }
 
 func WeekOf(
