@@ -1,10 +1,32 @@
 syntax = "proto3";
 
 package reader;
+option go_package = "github.com/kellegous/reader";
 
 import "google/protobuf/empty.proto";
-option go_package = "github.com/kellegous/reader";
+import "google/protobuf/timestamp.proto";
 
 service Reader {
   rpc CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+  rpc EntriesByWeek(EntriesByWeekRequest) returns (EntriesByWeekResponse) {}
 }
+
+message EntriesByWeekRequest {
+  enum WeekDay {
+    SUNDAY = 0;
+    MONDAY = 1;
+    TUESDAY = 2;
+    WEDNESDAY = 3;
+    THURSDAY = 4;
+    FRIDAY = 5;
+    SATURDAY = 6;
+  }
+
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+  WeekDay week_beginning = 3;
+}
+
+message EntriesByWeekResponse { repeated Entry entries = 1; }
+
+message Entry { string id = 1; }
