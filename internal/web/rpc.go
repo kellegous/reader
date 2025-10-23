@@ -38,6 +38,16 @@ func (r *rpc) CheckHealth(ctx context.Context, req *emptypb.Empty) (*emptypb.Emp
 	return &emptypb.Empty{}, nil
 }
 
-func (r *rpc) EntriesByWeek(ctx context.Context, req *reader.EntriesByWeekRequest) (*reader.EntriesByWeekResponse, error) {
-	return &reader.EntriesByWeekResponse{}, nil
+func (r *rpc) GetEntriesByWeek(ctx context.Context, req *reader.GetEntriesByWeekRequest) (*reader.GetEntriesByWeekResponse, error) {
+	user, err := r.client.MeContext(ctx)
+	if err != nil {
+		return nil, newBackendError(ctx, err)
+	}
+
+	logging.L(ctx).Info("user",
+		zap.String("username", user.Username),
+		zap.String("timezone", user.Timezone),
+	)
+
+	return &reader.GetEntriesByWeekResponse{}, nil
 }

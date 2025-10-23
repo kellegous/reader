@@ -8,10 +8,11 @@ import "google/protobuf/timestamp.proto";
 
 service Reader {
   rpc CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty) {}
-  rpc EntriesByWeek(EntriesByWeekRequest) returns (EntriesByWeekResponse) {}
+  rpc GetEntriesByWeek(GetEntriesByWeekRequest)
+      returns (GetEntriesByWeekResponse) {}
 }
 
-message EntriesByWeekRequest {
+message GetEntriesByWeekRequest {
   enum WeekDay {
     SUNDAY = 0;
     MONDAY = 1;
@@ -27,6 +28,6 @@ message EntriesByWeekRequest {
   WeekDay week_beginning = 3;
 }
 
-message EntriesByWeekResponse { repeated Entry entries = 1; }
+message GetEntriesByWeekResponse { repeated Entry entries = 1; }
 
 message Entry { string id = 1; }
