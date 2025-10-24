@@ -14,6 +14,10 @@ BE_PROTOS := \
 	reader.pb.go \
 	reader.twirp.go
 
+FE_PROTOS := \
+	ui/src/gen/reader.ts \
+	ui/src/gen/reader.twirp.ts
+
 .PHONY: all clean develop
 
 .PRECIOUS: $(BE_PROTOS)
@@ -46,11 +50,29 @@ bin/protoc-gen-twirp:
 		--twirp_opt=module=$(GO_MOD) \
 		$<
 
+ui/src/gen/%.ts: %.proto node_modules/.build
+	mkdir -p $(dir $@)
+	protoc --proto_path=. \
+		--plugin=protoc-gen-ts=node_modules/.bin/protoc-gen-ts \
+		--ts_out=ui/src/gen \
+		--ts_opt=ts_nocheck,force_server_none \
+		$<
+
+ui/src/gen/%.twirp.ts: %.proto node_modules/.build
+	mkdir -p $(dir $@)
+	protoc --proto_path=. \
+		--plugin=protoc-gen-ts=node_modules/.bin/protoc-gen-ts \
+		--plugin=protoc-gen-twirp_ts=node_modules/.bin/protoc-gen-twirp_ts \
+		--twirp_ts_out=ui/src/gen \
+		--ts_out=ui/src/gen \
+		--ts_opt=ts_nocheck,force_server_none \
+		$<
+
 node_modules/.build:
 	npm install
 	touch $@
 
-internal/ui/assets/index.html: node_modules/.build $(shell find ui -type f)
+internal/ui/assets/index.html: node_modules/.build $(FE_PROTOS) $(shell find ui -type f)
 	SHA="$(SHA)" BUILD_NAME="$(BUILD_NAME)" npm run build
 
 develop: bin/reader
