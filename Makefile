@@ -2,7 +2,13 @@ PROTOC_GEN_GO_VERSION := v1.36.10
 PROTOC_GEN_TWIRP_VERSION := v8.1.3
 PROTOC_VERSION := 33.0
 
+SHA = $(shell go run github.com/kellegous/glue/build/info@latest --format="{{.SHA}}")
+BUILD_NAME = $(shell go run github.com/kellegous/glue/build/info@latest --format="{{.Name}}")
+
 GO_MOD := $(shell go list -m)
+
+ASSETS := \
+	internal/ui/assets/index.html
 
 BE_PROTOS := \
 	reader.pb.go \
@@ -14,7 +20,7 @@ BE_PROTOS := \
 
 ALL: bin/reader
 
-bin/%: cmd/%/main.go $(BE_PROTOS) $(shell find internal -name '*.go')
+bin/%: cmd/%/main.go $(BE_PROTOS) $(ASSETS) $(shell find internal -name '*.go')
 	go build -o $@ ./cmd/$*
 
 bin/protoc:
@@ -40,5 +46,12 @@ bin/protoc-gen-twirp:
 		--twirp_opt=module=$(GO_MOD) \
 		$<
 
+node_modules/.build:
+	npm install
+	touch $@
+
+internal/ui/assets/index.html: node_modules/.build $(shell find ui -type f)
+	SHA="$(SHA)" BUILD_NAME="$(BUILD_NAME)" npm run build
+
 clean:
-	rm -rf bin
+	rm -rf bin internal/ui/assets
