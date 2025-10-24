@@ -4,8 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
+	"os/exec"
 	"os/signal"
+	"strconv"
+	"strings"
 
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
@@ -21,17 +27,52 @@ import (
 
 const backendAddr = "127.0.0.1:9090"
 
-func serverCmd() *cobra.Command {
-	var flags struct {
-		ConfigFile string
-		Debug      bool
+type DevMode struct {
+	Root string
+	Port int
+}
+
+func (d *DevMode) IsZero() bool {
+	return d.Port == 0
+}
+
+func (d *DevMode) Set(v string) error {
+	root, ps, ok := strings.Cut(v, ":")
+	if !ok {
+		root = "."
+		ps = v
 	}
+	port, err := strconv.Atoi(ps)
+	if err != nil {
+		return err
+	}
+	d.Port = port
+	d.Root = root
+	return nil
+}
+
+func (d *DevMode) String() string {
+	return fmt.Sprintf("%s:%d", d.Root, d.Port)
+}
+
+func (d *DevMode) Type() string {
+	return "root:port"
+}
+
+type serverFlags struct {
+	ConfigFile string
+	Debug      bool
+	DevMode    DevMode
+}
+
+func serverCmd() *cobra.Command {
+	var flags serverFlags
 
 	cmd := &cobra.Command{
 		Use:   "server",
 		Short: "Start the reader server",
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := runServer(cmd, flags.ConfigFile, flags.Debug); err != nil {
+			if err := runServer(cmd, &flags); err != nil {
 				logging.L(cmd.Context()).Fatal("unable to start server", zap.Error(err))
 			}
 		},
@@ -39,12 +80,13 @@ func serverCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&flags.ConfigFile, "config-file", "reader.yaml", "Path to the config file")
 	cmd.Flags().BoolVar(&flags.Debug, "debug", false, "Enable debug logging")
+	cmd.Flags().Var(&flags.DevMode, "dev-mode", "Enable dev mode (HMR loading in ui)")
 	return cmd
 }
 
-func runServer(cmd *cobra.Command, configFile string, debug bool) error {
+func runServer(cmd *cobra.Command, flags *serverFlags) error {
 	var cfg config.Info
-	if err := cfg.ReadFile(configFile); err != nil {
+	if err := cfg.ReadFile(flags.ConfigFile); err != nil {
 		return poop.Chain(err)
 	}
 
@@ -69,7 +111,7 @@ func runServer(cmd *cobra.Command, configFile string, debug bool) error {
 		ctx,
 		fmt.Sprintf("https://%s/", cfg.Web.Hostname),
 		&cfg,
-		debug)
+		flags.Debug)
 	if err != nil {
 		return poop.Chain(err)
 	}
@@ -83,7 +125,7 @@ func runServer(cmd *cobra.Command, configFile string, debug bool) error {
 	}
 	defer l.Close()
 
-	assets, err := ui.Assets()
+	assets, err := getAssets(ctx, flags.DevMode)
 	if err != nil {
 		return poop.Chain(err)
 	}
@@ -144,4 +186,49 @@ func startMiniflux(
 		miniflux.WithBaseURL(baseURL),
 		miniflux.WithDebugLogging(debug),
 	)
+}
+
+func getAssets(
+	ctx context.Context,
+	devMode DevMode,
+) (http.Handler, error) {
+	if devMode.IsZero() {
+		a, err := ui.Assets()
+		if err != nil {
+			return nil, err
+		}
+		return http.StripPrefix("/ui/", a), nil
+	}
+
+	c := exec.CommandContext(
+		ctx,
+		"node_modules/.bin/vite",
+		"--clearScreen=false",
+		fmt.Sprintf("--port=%d", devMode.Port))
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	c.Dir = devMode.Root
+	if err := c.Start(); err != nil {
+		return nil, err
+	}
+
+	proxyURL := url.URL{
+		Scheme: "http",
+		Host:   fmt.Sprintf("localhost:%d", devMode.Port),
+		Path:   "/",
+	}
+
+	p := httputil.NewSingleHostReverseProxy(&proxyURL)
+	dir := p.Director
+	p.Director = func(r *http.Request) {
+		dir(r)
+		r.Host = proxyURL.Host
+	}
+
+	// go func() {
+	// 	time.Sleep(2 * time.Second)
+	// 	emitBanner(os.Stdout, addr.BrowserURL(), &proxyURL)
+	// }()
+
+	return p, nil
 }

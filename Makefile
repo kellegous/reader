@@ -14,7 +14,7 @@ BE_PROTOS := \
 	reader.pb.go \
 	reader.twirp.go
 
-.PHONY: all clean
+.PHONY: all clean develop
 
 .PRECIOUS: $(BE_PROTOS)
 
@@ -52,6 +52,9 @@ node_modules/.build:
 
 internal/ui/assets/index.html: node_modules/.build $(shell find ui -type f)
 	SHA="$(SHA)" BUILD_NAME="$(BUILD_NAME)" npm run build
+
+develop: bin/reader
+	bin/reader server --dev-mode=.:3020
 
 clean:
 	rm -rf bin internal/ui/assets

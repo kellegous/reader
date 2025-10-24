@@ -28,7 +28,7 @@ func Serve(
 	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{
 		client: ms.Client(),
 	}))
-	m.Handle("/ui/", http.StripPrefix("/ui/", assets))
+	m.Handle("/ui/", assets)
 
 	return http.Serve(l, m)
 }
