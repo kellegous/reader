@@ -10,6 +10,7 @@ import (
 	"github.com/twitchtv/twirp"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"miniflux.app/v2/client"
 
 	"github.com/kellegous/glue/logging"
@@ -81,8 +82,22 @@ func (r *rpc) GetEntriesByWeek(ctx context.Context, req *reader.GetEntriesByWeek
 
 	entries := make([]*reader.Entry, 0, len(res.Entries))
 	for _, entry := range res.Entries {
+		feed := entry.Feed
 		entries = append(entries, &reader.Entry{
-			Id: entry.ID,
+			Id:          entry.ID,
+			PublishedAt: timestamppb.New(entry.Date),
+			ChangedAt:   timestamppb.New(entry.ChangedAt),
+			CreatedAt:   timestamppb.New(entry.CreatedAt),
+			Feed: &reader.Feed{
+				Id:      feed.ID,
+				FeedUrl: feed.FeedURL,
+				SiteUrl: feed.SiteURL,
+				Title:   feed.Title,
+			},
+			Url:         entry.URL,
+			Title:       entry.Title,
+			Content:     entry.Content,
+			ReadingTime: int32(entry.ReadingTime),
 		})
 	}
 

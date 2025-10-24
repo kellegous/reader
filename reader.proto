@@ -43,4 +43,21 @@ message GetEntriesByWeekRequest {
 
 message GetEntriesByWeekResponse { repeated Entry entries = 1; }
 
-message Entry { int64 id = 1; }
+message Entry {
+  int64 id = 1;
+  google.protobuf.Timestamp published_at = 2;
+  google.protobuf.Timestamp changed_at = 3;
+  google.protobuf.Timestamp created_at = 4;
+  Feed feed = 5;
+  string url = 6;
+  string title = 7;
+  string content = 8;
+  int32 reading_time = 9;
+}
+
+message Feed {
+  int64 id = 1;
+  string feed_url = 2;
+  string site_url = 3;
+  string title = 4;
+}
