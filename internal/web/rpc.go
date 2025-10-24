@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kellegous/glue/logging"
 	"github.com/twitchtv/twirp"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"miniflux.app/v2/client"
 
-	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/reader"
 	"github.com/kellegous/reader/internal"
 )
