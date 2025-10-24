@@ -8,9 +8,28 @@ import "google/protobuf/timestamp.proto";
 
 service Reader {
   rpc CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+  rpc GetEntries(GetEntriesRequest) returns (GetEntriesResponse) {}
   rpc GetEntriesByWeek(GetEntriesByWeekRequest)
       returns (GetEntriesByWeekResponse) {}
 }
+
+message GetEntriesRequest {
+  enum SortKey {
+    PUBLISHED_AT = 0;
+    ID = 1;
+    STATUS = 2;
+  }
+  enum Order {
+    ASC = 0;
+    DES = 1;
+  }
+  google.protobuf.Timestamp published_after = 1;
+  google.protobuf.Timestamp published_before = 2;
+  SortKey sort_key = 3;
+  Order order = 4;
+}
+
+message GetEntriesResponse { repeated Entry entries = 1; }
 
 message GetEntriesByWeekRequest {
   enum WeekDay {

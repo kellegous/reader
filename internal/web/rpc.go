@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/twitchtv/twirp"
@@ -39,6 +40,46 @@ func (r *rpc) CheckHealth(ctx context.Context, req *emptypb.Empty) (*emptypb.Emp
 		return nil, newBackendError(ctx, err)
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (r *rpc) GetEntries(ctx context.Context, req *reader.GetEntriesRequest) (*reader.GetEntriesResponse, error) {
+	res, err := r.client.EntriesContext(ctx, &client.Filter{
+		PublishedAfter:  req.PublishedAfter.AsTime().Unix(),
+		PublishedBefore: req.PublishedBefore.AsTime().Unix(),
+		Order:           strings.ToLower(req.SortKey.String()),
+		Direction:       strings.ToLower(req.Order.String()),
+	})
+	if err != nil {
+		return nil, newBackendError(ctx, err)
+	}
+
+	entries := make([]*reader.Entry, 0, len(res.Entries))
+	for _, entry := range res.Entries {
+		entries = append(entries, toEntry(entry))
+	}
+	return &reader.GetEntriesResponse{
+		Entries: entries,
+	}, nil
+}
+
+func toEntry(entry *client.Entry) *reader.Entry {
+	feed := entry.Feed
+	return &reader.Entry{
+		Id:          entry.ID,
+		PublishedAt: timestamppb.New(entry.Date),
+		ChangedAt:   timestamppb.New(entry.ChangedAt),
+		CreatedAt:   timestamppb.New(entry.CreatedAt),
+		Feed: &reader.Feed{
+			Id:      feed.ID,
+			FeedUrl: feed.FeedURL,
+			SiteUrl: feed.SiteURL,
+			Title:   feed.Title,
+		},
+		Url:         entry.URL,
+		Title:       entry.Title,
+		Content:     entry.Content,
+		ReadingTime: int32(entry.ReadingTime),
+	}
 }
 
 func (r *rpc) GetEntriesByWeek(ctx context.Context, req *reader.GetEntriesByWeekRequest) (*reader.GetEntriesByWeekResponse, error) {
