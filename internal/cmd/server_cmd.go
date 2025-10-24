@@ -15,6 +15,7 @@ import (
 	"github.com/kellegous/reader/internal/config"
 	"github.com/kellegous/reader/internal/miniflux"
 	"github.com/kellegous/reader/internal/postgres"
+	"github.com/kellegous/reader/internal/ui"
 	"github.com/kellegous/reader/internal/web"
 )
 
@@ -82,8 +83,13 @@ func runServer(cmd *cobra.Command, configFile string, debug bool) error {
 	}
 	defer l.Close()
 
+	assets, err := ui.Assets()
+	if err != nil {
+		return poop.Chain(err)
+	}
+
 	go func() {
-		ch <- web.Serve(ctx, l, mf)
+		ch <- web.Serve(ctx, l, mf, assets)
 	}()
 
 	select {

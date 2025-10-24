@@ -15,6 +15,7 @@ func Serve(
 	ctx context.Context,
 	l net.Listener,
 	ms *miniflux.Server,
+	assets http.Handler,
 ) error {
 	beURL, err := url.Parse(ms.BaseURL())
 	if err != nil {
@@ -27,6 +28,7 @@ func Serve(
 	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{
 		client: ms.Client(),
 	}))
+	m.Handle("/ui/", http.StripPrefix("/ui/", assets))
 
 	return http.Serve(l, m)
 }
