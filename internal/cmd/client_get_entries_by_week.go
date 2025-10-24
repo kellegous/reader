@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -55,7 +56,7 @@ func runClientGetEntriesByWeek(cmd *cobra.Command, flags *clientFlags) error {
 		return poop.Chain(err)
 	}
 
-	cmd.Println(string(b))
+	fmt.Println(string(b))
 
 	return nil
 }

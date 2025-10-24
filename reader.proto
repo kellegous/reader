@@ -41,7 +41,18 @@ message GetEntriesByWeekRequest {
   WeekDay week_starts_day = 3;
 }
 
-message GetEntriesByWeekResponse { repeated Entry entries = 1; }
+message GetEntriesByWeekResponse {
+  message WeekOfEntries {
+    Week week = 1;
+    repeated Entry entries = 2;
+  }
+  repeated WeekOfEntries weeks_of_entries = 1;
+}
+
+message Week {
+  google.protobuf.Timestamp begins_at = 1;
+  google.protobuf.Timestamp ends_at = 2;
+}
 
 message Entry {
   int64 id = 1;

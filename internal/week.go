@@ -23,6 +23,10 @@ func (w Week) String() string {
 	return fmt.Sprintf("%s - %s", Day(w.BeginsAt()), Day(w.EndsAt()))
 }
 
+func (w Week) Equals(other Week) bool {
+	return time.Time(w).Equal(time.Time(other))
+}
+
 func WeekOf(
 	t time.Time,
 	beginning time.Weekday,

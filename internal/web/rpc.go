@@ -80,10 +80,11 @@ func (r *rpc) GetEntriesByWeek(ctx context.Context, req *reader.GetEntriesByWeek
 		return nil, newBackendError(ctx, err)
 	}
 
-	entries := make([]*reader.Entry, 0, len(res.Entries))
+	var weeksOfEntries []*reader.GetEntriesByWeekResponse_WeekOfEntries
 	for _, entry := range res.Entries {
 		feed := entry.Feed
-		entries = append(entries, &reader.Entry{
+
+		e := &reader.Entry{
 			Id:          entry.ID,
 			PublishedAt: timestamppb.New(entry.Date),
 			ChangedAt:   timestamppb.New(entry.ChangedAt),
@@ -98,10 +99,36 @@ func (r *rpc) GetEntriesByWeek(ctx context.Context, req *reader.GetEntriesByWeek
 			Title:       entry.Title,
 			Content:     entry.Content,
 			ReadingTime: int32(entry.ReadingTime),
-		})
+		}
+
+		week := internal.WeekOf(entry.Date, time.Weekday(req.WeekStartsDay), loc)
+		if len(weeksOfEntries) == 0 {
+			weeksOfEntries = append(weeksOfEntries, &reader.GetEntriesByWeekResponse_WeekOfEntries{
+				Week: &reader.Week{
+					BeginsAt: timestamppb.New(week.BeginsAt()),
+					EndsAt:   timestamppb.New(week.EndsAt()),
+				},
+				Entries: []*reader.Entry{e},
+			})
+			continue
+		}
+
+		currentWeek := internal.WeekOf(weeksOfEntries[len(weeksOfEntries)-1].GetWeek().GetBeginsAt().AsTime(), time.Weekday(req.WeekStartsDay), loc)
+		if !currentWeek.Equals(week) {
+			weeksOfEntries = append(weeksOfEntries, &reader.GetEntriesByWeekResponse_WeekOfEntries{
+				Week: &reader.Week{
+					BeginsAt: timestamppb.New(week.BeginsAt()),
+					EndsAt:   timestamppb.New(week.EndsAt()),
+				},
+				Entries: []*reader.Entry{e},
+			})
+			continue
+		}
+
+		weeksOfEntries[len(weeksOfEntries)-1].Entries = append(weeksOfEntries[len(weeksOfEntries)-1].Entries, e)
 	}
 
 	return &reader.GetEntriesByWeekResponse{
-		Entries: entries,
+		WeeksOfEntries: weeksOfEntries,
 	}, nil
 }
