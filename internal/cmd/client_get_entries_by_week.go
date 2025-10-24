@@ -32,11 +32,14 @@ func runClientGetEntriesByWeek(cmd *cobra.Command, flags *clientFlags) error {
 
 	// TODO: this needs to be configurable
 
-	now := time.Now()
-
 	res, err := client.GetEntriesByWeek(cmd.Context(), &reader.GetEntriesByWeekRequest{
-		StartDate: timestamppb.New(now),
-		EndDate:   timestamppb.New(now.AddDate(0, 0, 30)),
+		Range: &reader.GetEntriesByWeekRequest_NWeeksFromWeek_{
+			NWeeksFromWeek: &reader.GetEntriesByWeekRequest_NWeeksFromWeek{
+				FromWeekOf: timestamppb.New(time.Now()),
+				NWeeks:     5,
+			},
+		},
+		WeekStartsDay: reader.GetEntriesByWeekRequest_MONDAY,
 	})
 	if err != nil {
 		return poop.Chain(err)

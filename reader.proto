@@ -23,11 +23,24 @@ message GetEntriesByWeekRequest {
     SATURDAY = 6;
   }
 
-  google.protobuf.Timestamp start_date = 1;
-  google.protobuf.Timestamp end_date = 2;
-  WeekDay week_beginning = 3;
+  message FromWeekToWeek {
+    google.protobuf.Timestamp from_week_of = 1;
+    google.protobuf.Timestamp to_week_of = 2;
+  }
+
+  message NWeeksFromWeek {
+    google.protobuf.Timestamp from_week_of = 1;
+    uint32 n_weeks = 2;
+  }
+
+  oneof range {
+    FromWeekToWeek from_week_to_week = 1;
+    NWeeksFromWeek n_weeks_from_week = 2;
+  }
+
+  WeekDay week_starts_day = 3;
 }
 
 message GetEntriesByWeekResponse { repeated Entry entries = 1; }
 
-message Entry { string id = 1; }
+message Entry { int64 id = 1; }

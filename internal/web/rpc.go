@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	"github.com/twitchtv/twirp"
 	"go.uber.org/zap"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/reader"
+	"github.com/kellegous/reader/internal"
 )
 
 type rpc struct {
@@ -44,10 +46,47 @@ func (r *rpc) GetEntriesByWeek(ctx context.Context, req *reader.GetEntriesByWeek
 		return nil, newBackendError(ctx, err)
 	}
 
-	logging.L(ctx).Info("user",
-		zap.String("username", user.Username),
-		zap.String("timezone", user.Timezone),
-	)
+	loc, err := time.LoadLocation(user.Timezone)
+	if err != nil {
+		return nil, newBackendError(ctx, err)
+	}
 
-	return &reader.GetEntriesByWeekResponse{}, nil
+	var publishedBefore time.Time
+	var publishedAfter time.Time
+
+	switch t := req.Range.(type) {
+	case *reader.GetEntriesByWeekRequest_FromWeekToWeek_:
+		v := t.FromWeekToWeek
+		publishedAfter = internal.WeekOf(v.FromWeekOf.AsTime(), time.Weekday(req.WeekStartsDay), loc).BeginsAt()
+		publishedBefore = internal.WeekOf(v.ToWeekOf.AsTime(), time.Weekday(req.WeekStartsDay), loc).EndsAt()
+	case *reader.GetEntriesByWeekRequest_NWeeksFromWeek_:
+		v := t.NWeeksFromWeek
+		after := internal.WeekOf(v.FromWeekOf.AsTime(), time.Weekday(req.WeekStartsDay), loc)
+		before := after.Add(int(v.NWeeks))
+		publishedAfter = after.BeginsAt()
+		publishedBefore = before.EndsAt()
+	default:
+		return nil, twirp.InvalidArgumentError("range", fmt.Sprintf("invalid range: %T", req.Range))
+	}
+
+	res, err := r.client.EntriesContext(ctx, &client.Filter{
+		PublishedAfter:  publishedAfter.Unix(),
+		PublishedBefore: publishedBefore.Unix(),
+		Order:           "published_at",
+		Direction:       "desc",
+	})
+	if err != nil {
+		return nil, newBackendError(ctx, err)
+	}
+
+	entries := make([]*reader.Entry, 0, len(res.Entries))
+	for _, entry := range res.Entries {
+		entries = append(entries, &reader.Entry{
+			Id: entry.ID,
+		})
+	}
+
+	return &reader.GetEntriesByWeekResponse{
+		Entries: entries,
+	}, nil
 }

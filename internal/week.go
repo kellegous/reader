@@ -7,6 +7,10 @@ import (
 
 type Week time.Time
 
+func (w Week) Add(d int) Week {
+	return Week(Day(w).Add(7 * d))
+}
+
 func (w Week) BeginsAt() time.Time {
 	return Day(w).AsTime()
 }
