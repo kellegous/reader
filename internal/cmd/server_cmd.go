@@ -25,7 +25,10 @@ import (
 	"github.com/kellegous/reader/internal/web"
 )
 
-const backendAddr = "127.0.0.1:9090"
+const (
+	backendAddr     = "127.0.0.1:9090"
+	authProxyHeader = "X-Reader-User"
+)
 
 type DevMode struct {
 	Root string
@@ -131,7 +134,11 @@ func runServer(cmd *cobra.Command, flags *serverFlags) error {
 	}
 
 	go func() {
-		ch <- web.Serve(ctx, l, mf, assets)
+		headers := map[string]string{}
+		if l := cfg.Miniflux.AutoLoginAs; l != "" {
+			headers[authProxyHeader] = l
+		}
+		ch <- web.Serve(ctx, l, mf, assets, headers)
 	}()
 
 	select {
@@ -173,8 +180,7 @@ func startMiniflux(
 	cfg *config.Info,
 	debug bool,
 ) (*miniflux.Server, error) {
-	return miniflux.Start(
-		ctx,
+	opts := []miniflux.Option{
 		miniflux.WithAdmin(
 			cfg.Miniflux.AdminUsername,
 			cfg.Miniflux.AdminPassword),
@@ -185,6 +191,17 @@ func startMiniflux(
 		miniflux.WithListenAddress(backendAddr),
 		miniflux.WithBaseURL(baseURL),
 		miniflux.WithDebugLogging(debug),
+	}
+
+	if cfg.Miniflux.AutoLoginAs != "" {
+		opts = append(
+			opts, miniflux.WithAuthProxyHeader(authProxyHeader),
+			miniflux.WithAuthProxyUserCreation(true))
+	}
+
+	return miniflux.Start(
+		ctx,
+		opts...,
 	)
 }
 

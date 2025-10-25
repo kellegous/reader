@@ -84,6 +84,20 @@ func WithRunMigrations(v bool) Option {
 	}
 }
 
+func WithAuthProxyHeader(header string) Option {
+	return func(s *Server) error {
+		s.env["AUTH_PROXY_HEADER"] = header
+		return nil
+	}
+}
+
+func WithAuthProxyUserCreation(v bool) Option {
+	return func(s *Server) error {
+		s.env["AUTH_PROXY_USER_CREATION"] = "1"
+		return nil
+	}
+}
+
 func WithDebugLogging(v bool) Option {
 	return func(s *Server) error {
 		if v {

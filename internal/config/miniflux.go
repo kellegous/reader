@@ -5,6 +5,7 @@ import "errors"
 type Miniflux struct {
 	AdminUsername string `yaml:"admin-username"`
 	AdminPassword string `yaml:"admin-password"`
+	AutoLoginAs   string `yaml:"auto-login-as"`
 }
 
 func (m *Miniflux) apply() error {

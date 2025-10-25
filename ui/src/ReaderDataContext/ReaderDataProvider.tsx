@@ -41,6 +41,7 @@ const loadState = async (
   await Promise.all([
     client.GetMe({}).then(({ user }) => {
       state = { ...state, me: user ?? null };
+      setState(state);
     }),
   ]);
 
