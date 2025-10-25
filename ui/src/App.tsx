@@ -2,9 +2,14 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/pub/vite.svg";
 import "./App.css";
+import { useReaderData } from "./ReaderDataContext";
 
 function App() {
   const [count, setCount] = useState(0);
+
+  const { me, loading } = useReaderData();
+
+  console.log(me, loading);
 
   return (
     <>

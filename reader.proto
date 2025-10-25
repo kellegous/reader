@@ -9,6 +9,7 @@ import "google/protobuf/timestamp.proto";
 service Reader {
   rpc CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty) {}
   rpc GetEntries(GetEntriesRequest) returns (GetEntriesResponse) {}
+  rpc GetMe(google.protobuf.Empty) returns (GetMeResponse) {}
   rpc GetEntriesByWeek(GetEntriesByWeekRequest)
       returns (GetEntriesByWeekResponse) {}
 }
@@ -30,6 +31,17 @@ message GetEntriesRequest {
 }
 
 message GetEntriesResponse { repeated Entry entries = 1; }
+
+message GetMeResponse { User user = 1; }
+
+message User {
+  int64 id = 1;
+  string username = 2;
+  bool is_admin = 3;
+  string theme = 4;
+  string language = 5;
+  string timezone = 6;
+}
 
 message GetEntriesByWeekRequest {
   enum WeekDay {

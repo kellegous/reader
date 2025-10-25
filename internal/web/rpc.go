@@ -62,6 +62,27 @@ func (r *rpc) GetEntries(ctx context.Context, req *reader.GetEntriesRequest) (*r
 	}, nil
 }
 
+func (r *rpc) GetMe(ctx context.Context, req *emptypb.Empty) (*reader.GetMeResponse, error) {
+	user, err := r.client.MeContext(ctx)
+	if err != nil {
+		return nil, newBackendError(ctx, err)
+	}
+	return &reader.GetMeResponse{
+		User: toUser(user),
+	}, nil
+}
+
+func toUser(user *client.User) *reader.User {
+	return &reader.User{
+		Id:       user.ID,
+		Username: user.Username,
+		IsAdmin:  user.IsAdmin,
+		Theme:    user.Theme,
+		Language: user.Language,
+		Timezone: user.Timezone,
+	}
+}
+
 func toEntry(entry *client.Entry) *reader.Entry {
 	feed := entry.Feed
 	return &reader.Entry{
