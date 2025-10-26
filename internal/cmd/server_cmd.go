@@ -195,8 +195,10 @@ func startMiniflux(
 
 	if cfg.Miniflux.AutoLoginAs != "" {
 		opts = append(
-			opts, miniflux.WithAuthProxyHeader(authProxyHeader),
-			miniflux.WithAuthProxyUserCreation(true))
+			opts, miniflux.WithAuthProxy(
+				authProxyHeader,
+				true,
+				[]string{cfg.Miniflux.AutoLoginAs}))
 	}
 
 	return miniflux.Start(

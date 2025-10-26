@@ -10,15 +10,20 @@ import (
 type Option func(*Options) error
 
 type Options struct {
-	databaseURL           string
-	externalURL           string
-	internalURL           string
-	listenAddr            string
-	admin                 *login
-	runMigrations         bool
-	authProxyHeader       string
-	authProxyUserCreation bool
-	debugLogging          bool
+	databaseURL   string
+	externalURL   string
+	internalURL   string
+	listenAddr    string
+	admin         *login
+	runMigrations bool
+	authProxy     *authProxy
+	debugLogging  bool
+}
+
+type authProxy struct {
+	header       string
+	userCreation bool
+	users        []string
 }
 
 type login struct {
@@ -31,29 +36,36 @@ func (o *Options) env() []string {
 	if o.databaseURL != "" {
 		env = append(env, "DATABASE_URL="+o.databaseURL)
 	}
+
 	if o.listenAddr != "" {
 		env = append(env, "LISTEN_ADDR="+o.listenAddr)
 	}
+
 	if o.externalURL != "" {
 		env = append(env, "BASE_URL="+o.externalURL)
 	}
+
 	if o.listenAddr != "" {
 		env = append(env, "LISTEN_ADDR="+o.listenAddr)
 	}
+
 	if a := o.admin; a != nil {
 		env = append(env, "CREATE_ADMIN=1")
 		env = append(env, "ADMIN_USERNAME="+a.username)
 		env = append(env, "ADMIN_PASSWORD="+a.password)
 	}
+
 	if o.runMigrations {
 		env = append(env, "RUN_MIGRATIONS=1")
 	}
-	if o.authProxyHeader != "" {
-		env = append(env, "AUTH_PROXY_HEADER="+o.authProxyHeader)
+
+	if p := o.authProxy; p != nil {
+		env = append(env, "AUTH_PROXY_HEADER="+p.header)
+		if p.userCreation {
+			env = append(env, "AUTH_PROXY_USER_CREATION=1")
+		}
 	}
-	if o.authProxyUserCreation {
-		env = append(env, "AUTH_PROXY_USER_CREATION=1")
-	}
+
 	if o.debugLogging {
 		env = append(env, "DEBUG=1")
 	}
@@ -126,16 +138,17 @@ func WithRunMigrations(v bool) Option {
 	}
 }
 
-func WithAuthProxyHeader(header string) Option {
+func WithAuthProxy(
+	header string,
+	userCreation bool,
+	users []string,
+) Option {
 	return func(o *Options) error {
-		o.authProxyHeader = header
-		return nil
-	}
-}
-
-func WithAuthProxyUserCreation(v bool) Option {
-	return func(o *Options) error {
-		o.authProxyUserCreation = v
+		o.authProxy = &authProxy{
+			header:       header,
+			userCreation: userCreation,
+			users:        users,
+		}
 		return nil
 	}
 }
