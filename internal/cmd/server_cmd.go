@@ -76,7 +76,8 @@ func serverCmd() *cobra.Command {
 		Short: "Start the reader server",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := runServer(cmd, &flags); err != nil {
-				logging.L(cmd.Context()).Fatal("unable to start server", zap.Error(err))
+				// logging.L(cmd.Context()).Fatal("unable to start server", zap.Error(err))
+				poop.HitFan(err)
 			}
 		},
 	}
@@ -138,7 +139,7 @@ func runServer(cmd *cobra.Command, flags *serverFlags) error {
 		if l := cfg.Miniflux.AutoLoginAs; l != "" {
 			headers[authProxyHeader] = l
 		}
-		ch <- web.Serve(ctx, l, mf, assets, headers)
+		ch <- web.Serve(ctx, &cfg, l, mf, assets, headers)
 	}()
 
 	select {
