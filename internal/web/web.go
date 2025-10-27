@@ -2,25 +2,41 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 
+	"github.com/kellegous/poop"
 	"github.com/kellegous/reader"
-	"github.com/kellegous/reader/internal/config"
 	"github.com/kellegous/reader/internal/miniflux"
 	"miniflux.app/v2/client"
 )
 
+func getMinifluxClient(
+	ctx context.Context,
+	ms *miniflux.Server,
+	username string,
+) (*client.Client, error) {
+	if username == "" {
+		return ms.Client(), nil
+	}
+
+	key, err := ms.ProvisionUser(ctx, username)
+	if err != nil {
+		return nil, poop.Chain(err)
+	}
+
+	return ms.Client(client.WithAPIKey(key.Token)), nil
+}
+
 func Serve(
 	ctx context.Context,
-	cfg *config.Info,
 	l net.Listener,
 	ms *miniflux.Server,
 	assets http.Handler,
 	headers map[string]string,
+	username string,
 ) error {
 	beURL, err := url.Parse(ms.BaseURL())
 	if err != nil {
@@ -37,15 +53,10 @@ func Serve(
 			r.Header.Add(k, v)
 		}
 	}
-	var api *client.Client
-	if l := cfg.Miniflux.AutoLoginAs; l != "" {
-		key := ms.APIKeyFor(l)
-		if key == nil {
-			return fmt.Errorf("no api key for user: %s", l)
-		}
-		api = ms.Client(client.WithAPIKey(key.Token))
-	} else {
-		api = ms.Client()
+
+	api, err := getMinifluxClient(ctx, ms, username)
+	if err != nil {
+		return poop.Chain(err)
 	}
 
 	m.Handle("/", p)

@@ -19,7 +19,6 @@ import (
 type Server struct {
 	proc *os.Process
 	opts Options
-	keys map[string]*client.APIKey
 }
 
 func (s *Server) Stop() error {
@@ -36,16 +35,12 @@ func (s *Server) Client(opts ...client.Option) *client.Client {
 		opts...)
 }
 
-func (s *Server) SQLConn(ctx context.Context) (*pgx.Conn, error) {
+func (s *Server) sqlConn(ctx context.Context) (*pgx.Conn, error) {
 	c, err := pgx.Connect(ctx, s.opts.databaseURL)
 	if err != nil {
 		return nil, poop.Chain(err)
 	}
 	return c, nil
-}
-
-func (s *Server) APIKeyFor(username string) *client.APIKey {
-	return s.keys[username]
 }
 
 func (s *Server) BaseURL() string {
@@ -87,46 +82,6 @@ func (s *Server) provisionAuthProxyUser(
 	return nil
 }
 
-func waitForLiveness(
-	ctx context.Context,
-	s *Server,
-	timeout time.Duration,
-) error {
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	doCheck := func() error {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.BaseURL()+"/liveness", nil)
-		if err != nil {
-			return poop.Chain(err)
-		}
-
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return poop.Chain(err)
-		}
-		defer res.Body.Close()
-
-		if res.StatusCode != http.StatusOK {
-			return poop.Newf("status %d for liveness check", res.StatusCode)
-		}
-
-		return nil
-	}
-
-	for {
-		if err := doCheck(); err == nil {
-			return nil
-		}
-
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(200 * time.Millisecond):
-		}
-	}
-}
-
 func ensureAPIKeyFor(
 	ctx context.Context,
 	s *Server,
@@ -137,7 +92,7 @@ func ensureAPIKeyFor(
 		return nil, poop.Chain(err)
 	}
 
-	db, err := s.SQLConn(ctx)
+	db, err := s.sqlConn(ctx)
 	if err != nil {
 		return nil, poop.Chain(err)
 	}
@@ -189,6 +144,65 @@ func ensureAPIKeyFor(
 	return &key, nil
 }
 
+func (s *Server) ProvisionUser(
+	ctx context.Context,
+	username string,
+) (*client.APIKey, error) {
+	if a := s.opts.authProxy; a == nil {
+		return nil, poop.New("auth proxy is not enabled")
+	}
+
+	if err := s.provisionAuthProxyUser(ctx, username); err != nil {
+		return nil, poop.Chain(err)
+	}
+
+	key, err := ensureAPIKeyFor(ctx, s, username)
+	if err != nil {
+		return nil, poop.Chain(err)
+	}
+
+	return key, nil
+}
+
+func (s *Server) WaitForReady(
+	ctx context.Context,
+	timeout time.Duration,
+) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	doCheck := func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.BaseURL()+"/liveness", nil)
+		if err != nil {
+			return poop.Chain(err)
+		}
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return poop.Chain(err)
+		}
+		defer res.Body.Close()
+
+		if res.StatusCode != http.StatusOK {
+			return poop.Newf("status %d for liveness check", res.StatusCode)
+		}
+
+		return nil
+	}
+
+	for {
+		if err := doCheck(); err == nil {
+			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(200 * time.Millisecond):
+		}
+	}
+}
+
 func Start(ctx context.Context, opts ...Option) (*Server, error) {
 	s := &Server{}
 	for _, opt := range opts {
@@ -206,25 +220,6 @@ func Start(ctx context.Context, opts ...Option) (*Server, error) {
 	}
 
 	s.proc = c.Process
-
-	if err := waitForLiveness(ctx, s, 10*time.Second); err != nil {
-		return nil, poop.Chain(err)
-	}
-
-	s.keys = make(map[string]*client.APIKey)
-	if p := s.opts.authProxy; p != nil {
-		for _, user := range p.users {
-			if err := s.provisionAuthProxyUser(ctx, user); err != nil {
-				return nil, poop.Chain(err)
-			}
-
-			key, err := ensureAPIKeyFor(ctx, s, user)
-			if err != nil {
-				return nil, poop.Chain(err)
-			}
-			s.keys[user] = key
-		}
-	}
 
 	return s, nil
 }

@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
@@ -135,11 +136,13 @@ func runServer(cmd *cobra.Command, flags *serverFlags) error {
 	}
 
 	go func() {
+		var username string
 		headers := map[string]string{}
 		if l := cfg.Miniflux.AutoLoginAs; l != "" {
 			headers[authProxyHeader] = l
+			username = l
 		}
-		ch <- web.Serve(ctx, &cfg, l, mf, assets, headers)
+		ch <- web.Serve(ctx, l, mf, assets, headers, username)
 	}()
 
 	select {
@@ -202,10 +205,16 @@ func startMiniflux(
 				[]string{cfg.Miniflux.AutoLoginAs}))
 	}
 
-	return miniflux.Start(
-		ctx,
-		opts...,
-	)
+	s, err := miniflux.Start(ctx, opts...)
+	if err != nil {
+		return nil, poop.Chain(err)
+	}
+
+	if err := s.WaitForReady(ctx, time.Minute); err != nil {
+		return nil, poop.Chain(err)
+	}
+
+	return s, nil
 }
 
 func getAssets(
