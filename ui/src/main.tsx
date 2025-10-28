@@ -1,13 +1,18 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./main.scss";
-import App from "./App.tsx";
 import { ReaderDataProvider } from "./ReaderDataContext";
+import { Weekday } from "./time";
+import { WeekList } from "./WeekList";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ReaderDataProvider>
-      <App />
+    <ReaderDataProvider
+      until={new Date()}
+      numWeeks={5}
+      weekday={Weekday.Monday}
+    >
+      <WeekList />
     </ReaderDataProvider>
   </StrictMode>
 );

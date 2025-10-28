@@ -1,14 +1,19 @@
 import { User, Entry } from "../gen/reader";
 import { createContext } from "react";
+import { Week } from "../time";
 
 export interface ReaderDataState {
   me: User | null;
-  entries: Entry[];
+  weeks: { week: Week; entries: Entry[] }[];
   loading: boolean;
+  until: Date;
+  numWeeks: number;
 }
 
 export const ReaderDataContext = createContext<ReaderDataState>({
   me: null,
-  entries: [],
+  weeks: [],
   loading: false,
+  until: new Date(),
+  numWeeks: 5,
 });
