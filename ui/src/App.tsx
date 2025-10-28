@@ -7,9 +7,9 @@ import { useReaderData } from "./ReaderDataContext";
 function App() {
   const [count, setCount] = useState(0);
 
-  const { me, loading } = useReaderData();
+  const { me, loading, entries } = useReaderData();
 
-  console.log(me, loading);
+  console.log({ me, loading, entries });
 
   return (
     <>

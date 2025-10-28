@@ -22,7 +22,7 @@ message GetEntriesRequest {
   }
   enum Order {
     ASC = 0;
-    DES = 1;
+    DESC = 1;
   }
   google.protobuf.Timestamp published_after = 1;
   google.protobuf.Timestamp published_before = 2;
