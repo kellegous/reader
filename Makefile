@@ -18,7 +18,7 @@ FE_PROTOS := \
 	ui/src/gen/reader.ts \
 	ui/src/gen/reader.twirp.ts
 
-.PHONY: all clean develop
+.PHONY: all clean develop nuke
 
 .PRECIOUS: $(BE_PROTOS)
 
@@ -80,3 +80,6 @@ develop: bin/reader
 
 clean:
 	rm -rf bin internal/ui/assets
+
+nuke: clean
+	rm -rf node_modules
