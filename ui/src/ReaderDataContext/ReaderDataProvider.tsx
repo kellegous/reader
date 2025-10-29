@@ -74,6 +74,7 @@ const loadState = async (
         publishedBefore: Timestamp.fromDate(latest.endsAt),
         sortKey: GetEntriesRequest_SortKey.PUBLISHED_AT,
         order: GetEntriesRequest_Order.DESC,
+        includeContent: false,
       })
       .then(({ entries }) => {
         state = {

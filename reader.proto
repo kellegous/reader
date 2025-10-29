@@ -10,8 +10,6 @@ service Reader {
   rpc CheckHealth(google.protobuf.Empty) returns (google.protobuf.Empty) {}
   rpc GetEntries(GetEntriesRequest) returns (GetEntriesResponse) {}
   rpc GetMe(google.protobuf.Empty) returns (GetMeResponse) {}
-  rpc GetEntriesByWeek(GetEntriesByWeekRequest)
-      returns (GetEntriesByWeekResponse) {}
 }
 
 message GetEntriesRequest {
@@ -28,6 +26,7 @@ message GetEntriesRequest {
   google.protobuf.Timestamp published_before = 2;
   SortKey sort_key = 3;
   Order order = 4;
+  bool include_content = 5;
 }
 
 message GetEntriesResponse { repeated Entry entries = 1; }
@@ -41,48 +40,6 @@ message User {
   string theme = 4;
   string language = 5;
   string timezone = 6;
-}
-
-message GetEntriesByWeekRequest {
-  enum WeekDay {
-    SUNDAY = 0;
-    MONDAY = 1;
-    TUESDAY = 2;
-    WEDNESDAY = 3;
-    THURSDAY = 4;
-    FRIDAY = 5;
-    SATURDAY = 6;
-  }
-
-  message FromWeekToWeek {
-    google.protobuf.Timestamp from_week_of = 1;
-    google.protobuf.Timestamp to_week_of = 2;
-  }
-
-  message NWeeksFromWeek {
-    google.protobuf.Timestamp from_week_of = 1;
-    uint32 n_weeks = 2;
-  }
-
-  oneof range {
-    FromWeekToWeek from_week_to_week = 1;
-    NWeeksFromWeek n_weeks_from_week = 2;
-  }
-
-  WeekDay week_starts_day = 3;
-}
-
-message GetEntriesByWeekResponse {
-  message WeekOfEntries {
-    Week week = 1;
-    repeated Entry entries = 2;
-  }
-  repeated WeekOfEntries weeks_of_entries = 1;
-}
-
-message Week {
-  google.protobuf.Timestamp begins_at = 1;
-  google.protobuf.Timestamp ends_at = 2;
 }
 
 message Entry {
@@ -102,4 +59,5 @@ message Feed {
   string feed_url = 2;
   string site_url = 3;
   string title = 4;
+  string icon_data_url = 5;
 }

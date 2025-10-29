@@ -72,7 +72,6 @@ func clientCmd() *cobra.Command {
 	cmd.Flags().Var(&flags.Codec, "codec", "Codec to use for the client")
 
 	cmd.AddCommand(clientCheckHealthCmd(&flags))
-	cmd.AddCommand(clientGetEntriesByWeekCmd(&flags))
 
 	return cmd
 }
