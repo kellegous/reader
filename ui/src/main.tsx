@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./main.scss";
 import { ReaderDataProvider } from "./ReaderDataContext";
 import { Weekday } from "./time";
-import { WeekList } from "./WeekList";
+import { Weeks } from "./Weeks";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -12,7 +12,7 @@ createRoot(document.getElementById("root")!).render(
       numWeeks={5}
       weekday={Weekday.Monday}
     >
-      <WeekList />
+      <Weeks />
     </ReaderDataProvider>
   </StrictMode>
 );
