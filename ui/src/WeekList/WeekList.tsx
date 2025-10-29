@@ -1,27 +1,37 @@
 import { useReaderData } from "../ReaderDataContext";
 import styles from "./WeekList.module.scss";
+import { Entry, Feed } from "../gen/reader";
+import { useMemo } from "react";
+import { Week } from "./Week";
 
 export const WeekList = () => {
   const { weeks } = useReaderData();
 
+  const groupedWeeks = useMemo(() => {
+    return weeks.map(({ week, entries }) => ({
+      week,
+      feeds: groupByFeed(entries),
+    }));
+  }, [weeks]);
+
   return (
     <div className={styles.root}>
-      {weeks.map(({ week, entries }) => (
-        <div key={week.startsAt.getTime()}>
-          <h2>
-            {week.toString()} ({entries.length})
-          </h2>
-          <ul>
-            {entries.map((entry) => (
-              <li key={entry.id}>
-                <a href={entry.url} target="_blank" rel="noopener noreferrer">
-                  {entry.feed?.title} / {entry.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {groupedWeeks.map(({ week, feeds }) => (
+        <Week key={week.startsAt.getTime()} week={week} feeds={feeds} />
       ))}
     </div>
+  );
+};
+
+const groupByFeed = (entries: Entry[]) => {
+  const byFeedId = new Map<bigint, { feed: Feed; entries: Entry[] }>();
+  for (const entry of entries) {
+    const f = entry.feed!;
+    const { feed, entries } = byFeedId.get(f.id) ?? { feed: f, entries: [] };
+    entries.push(entry);
+    byFeedId.set(f.id, { feed, entries });
+  }
+  return Array.from(byFeedId.values()).sort((a, b) =>
+    a.feed.title.localeCompare(b.feed.title)
   );
 };
