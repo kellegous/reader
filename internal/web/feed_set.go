@@ -2,10 +2,13 @@ package web
 
 import (
 	"context"
+	"errors"
 
-	"github.com/kellegous/reader"
+	"github.com/kellegous/poop"
 	"golang.org/x/sync/errgroup"
 	"miniflux.app/v2/client"
+
+	"github.com/kellegous/reader"
 )
 
 type feedSet struct {
@@ -34,8 +37,10 @@ func (s feedSet) resolveIcons(ctx context.Context) error {
 	for _, feed := range s.feeds {
 		g.Go(func() error {
 			icon, err := s.client.FeedIconContext(ctx, feed.Id)
-			if err != nil {
-				return err
+			if errors.Is(err, client.ErrNotFound) {
+				return nil
+			} else if err != nil {
+				return poop.Chain(err)
 			}
 			feed.IconDataUrl = "data://" + icon.Data
 			return nil
