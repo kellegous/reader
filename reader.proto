@@ -43,6 +43,11 @@ message User {
 }
 
 message Entry {
+  enum Status {
+    UNREAD = 0;
+    READ = 1;
+    REMOVED = 2;
+  }
   int64 id = 1;
   google.protobuf.Timestamp published_at = 2;
   google.protobuf.Timestamp changed_at = 3;
@@ -52,6 +57,7 @@ message Entry {
   string title = 7;
   string content = 8;
   int32 reading_time = 9;
+  Status status = 10;
 }
 
 message Feed {

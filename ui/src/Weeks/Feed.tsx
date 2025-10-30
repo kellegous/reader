@@ -1,6 +1,8 @@
 import * as proto from "../gen/reader";
 import { Entry } from "./Entry";
 import { useState } from "react";
+import styles from "./Feed.module.scss";
+import { FeedIcon } from "./FeedIcon";
 
 const DEFAULT_LIMIT = 5;
 
@@ -20,12 +22,14 @@ export const Feed = ({ feed, entries, limit = DEFAULT_LIMIT }: FeedProps) => {
   };
 
   return (
-    <div>
-      <div>
-        <img src={feed.iconDataUrl} alt={feed.title} width={16} height={16} />
-        {feed.title}
+    <div className={styles.root}>
+      <div className={styles.title}>
+        <FeedIcon url={feed.iconDataUrl} title={feed.title} />
+        <a href={feed.siteUrl} target="_blank" rel="noopener noreferrer">
+          {feed.title}
+        </a>
       </div>
-      <div>
+      <div className={styles.entries}>
         {toDisplay.map((entry) => (
           <Entry key={entry.id} entry={entry} />
         ))}

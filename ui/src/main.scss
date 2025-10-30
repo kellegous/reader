@@ -1,13 +1,13 @@
-#root {
-  width: 900px;
-  margin: 0 auto;
-}
-
 :root {
+  --font-size-small: 14px;
+  --font-size-large: 20px;
+  --font-size-x-large: 24px;
+
   font-family: "Montserrat", sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
+  font-size: 16px;
 
   background-color: #222;
   color: #fff;
@@ -18,13 +18,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+#root {
+  width: 900px;
+  margin: 0 auto;
 }
 
 body {
@@ -35,28 +31,13 @@ body {
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
+a {
+  color: #fff;
+  text-decoration: none;
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 @media (prefers-color-scheme: light) {

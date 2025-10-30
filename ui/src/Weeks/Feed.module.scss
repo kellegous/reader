@@ -1,0 +1,12 @@
+.root {
+  margin: 2em 0;
+  > .title {
+    display: flex;
+    gap: 0.5em;
+    font-size: var(--font-size-large);
+  }
+
+  > .entries {
+    margin-top: 1em;
+  }
+}

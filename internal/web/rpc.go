@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/kellegous/glue/logging"
+	"github.com/kellegous/poop"
 	"github.com/twitchtv/twirp"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -55,7 +56,11 @@ func (r *rpc) GetEntries(ctx context.Context, req *reader.GetEntriesRequest) (*r
 
 	entries := make([]*reader.Entry, 0, len(res.Entries))
 	for _, entry := range res.Entries {
-		entries = append(entries, toEntry(entry, fs.toFeed, req.GetIncludeContent()))
+		e, err := toEntry(entry, fs.toFeed, req.GetIncludeContent())
+		if err != nil {
+			return nil, newBackendError(ctx, err)
+		}
+		entries = append(entries, e)
 	}
 
 	if err := fs.resolveIcons(ctx); err != nil {
@@ -97,15 +102,29 @@ func toFeed(feed *client.Feed) *reader.Feed {
 	}
 }
 
+func toStatus(status string) (reader.Entry_Status, error) {
+	s, ok := reader.Entry_Status_value[strings.ToUpper(status)]
+	if !ok {
+		return 0, fmt.Errorf("invalid status: %s", status)
+	}
+	return reader.Entry_Status(s), nil
+}
+
 func toEntry(
 	entry *client.Entry,
 	toFeed func(*client.Feed) *reader.Feed,
 	includeContent bool,
-) *reader.Entry {
+) (*reader.Entry, error) {
 	var content string
 	if includeContent {
 		content = entry.Content
 	}
+
+	status, err := toStatus(entry.Status)
+	if err != nil {
+		return nil, poop.Chain(err)
+	}
+
 	return &reader.Entry{
 		Id:          entry.ID,
 		PublishedAt: timestamppb.New(entry.Date),
@@ -116,5 +135,6 @@ func toEntry(
 		Title:       entry.Title,
 		Content:     content,
 		ReadingTime: int32(entry.ReadingTime),
-	}
+		Status:      status,
+	}, nil
 }
