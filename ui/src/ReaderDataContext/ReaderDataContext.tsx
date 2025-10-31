@@ -8,6 +8,7 @@ export interface ReaderDataState {
   loading: boolean;
   until: Date;
   numWeeks: number;
+  refresh: () => Promise<void>;
 }
 
 export const ReaderDataContext = createContext<ReaderDataState>({
@@ -16,4 +17,5 @@ export const ReaderDataContext = createContext<ReaderDataState>({
   loading: false,
   until: new Date(),
   numWeeks: 5,
+  refresh: () => Promise.resolve(),
 });

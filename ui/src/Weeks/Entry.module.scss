@@ -3,13 +3,26 @@
   display: flex;
   flex-direction: column;
 
+  &.read,
+  &.removed {
+    > .title {
+      > a {
+        color: #999;
+      }
+    }
+    > .info {
+      color: #666;
+    }
+  }
+
   > .title {
     display: block; // TODO(kellegous): remove this.
   }
 
   > .info {
     display: flex;
-    gap: 0.5em;
+    gap: 1em;
     font-size: var(--font-size-x-small);
+    color: #aaa;
   }
 }

@@ -1,7 +1,7 @@
 import { FetchRPC } from "twirp-ts";
 import { ReaderClientJSON } from "../gen/reader.twirp";
 import { ReaderDataContext, ReaderDataState } from "./ReaderDataContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Week, Weekday } from "../time";
 import { Timestamp } from "../gen/google/protobuf/timestamp";
 import {
@@ -23,18 +23,24 @@ export const ReaderDataProvider = ({
   weekday,
   children,
 }: ReaderDataProviderProps) => {
+  const refresh = useCallback(async () => {
+    const client = new ReaderClientJSON(FetchRPC({ baseUrl: "/twirp" }));
+    await loadState(client, until, numWeeks, weekday, setState, refresh);
+  }, [until, numWeeks, weekday]);
+
   const [state, setState] = useState<ReaderDataState>({
     me: null,
     weeks: [],
     loading: false,
     until,
     numWeeks,
+    refresh,
   });
 
   useEffect(() => {
     const client = new ReaderClientJSON(FetchRPC({ baseUrl: "/twirp" }));
-    loadState(client, until, numWeeks, weekday, setState);
-  }, [until, numWeeks, weekday]);
+    loadState(client, until, numWeeks, weekday, setState, refresh);
+  }, [until, numWeeks, weekday, refresh]);
 
   return (
     <ReaderDataContext.Provider value={state}>
@@ -48,7 +54,8 @@ const loadState = async (
   until: Date,
   numWeeks: number,
   weekday: Weekday,
-  setState: (state: ReaderDataState) => void
+  setState: (state: ReaderDataState) => void,
+  refresh: () => Promise<void>
 ) => {
   let state: ReaderDataState = {
     me: null,
@@ -56,6 +63,7 @@ const loadState = async (
     loading: true,
     until,
     numWeeks,
+    refresh,
   };
 
   setState(state);

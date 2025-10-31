@@ -1,5 +1,8 @@
 .root {
   margin: 2em 0;
+  border-left: 1px solid #666;
+  padding-left: 1em;
+
   > .title {
     display: flex;
     gap: 0.5em;
@@ -8,5 +11,9 @@
 
   > .entries {
     margin-top: 1em;
+
+    > .more {
+      font-size: var(--font-size-small);
+    }
   }
 }

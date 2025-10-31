@@ -34,7 +34,7 @@ export const Feed = ({ feed, entries, limit = DEFAULT_LIMIT }: FeedProps) => {
           <Entry key={entry.id} entry={entry} />
         ))}
         {entries.length > limit && (
-          <a href="#" onClick={toggleShowMore}>
+          <a href="#" className={styles.more} onClick={toggleShowMore}>
             {showMore ? "Show less" : "Show more"}
           </a>
         )}
