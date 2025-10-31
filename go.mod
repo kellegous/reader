@@ -11,6 +11,7 @@ require (
 	github.com/spf13/cobra v1.10.1
 	github.com/twitchtv/twirp v8.1.3+incompatible
 	go.uber.org/zap v1.27.0
+	golang.org/x/net v0.46.0
 	golang.org/x/sync v0.17.0
 	google.golang.org/protobuf v1.36.10
 	gopkg.in/yaml.v3 v3.0.1

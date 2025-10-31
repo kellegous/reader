@@ -9,6 +9,7 @@ import (
 
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
+	"github.com/kellegous/reader/internal/plaintext"
 	"github.com/twitchtv/twirp"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -79,6 +80,17 @@ func (r *rpc) GetMe(ctx context.Context, req *emptypb.Empty) (*reader.GetMeRespo
 	}
 	return &reader.GetMeResponse{
 		User: toUser(user),
+	}, nil
+}
+
+func (r *rpc) GetEntryText(ctx context.Context, req *reader.GetEntryTextRequest) (*reader.GetEntryTextResponse, error) {
+	entry, err := r.client.EntryContext(ctx, req.EntryId)
+	if err != nil {
+		return nil, newBackendError(ctx, err)
+	}
+
+	return &reader.GetEntryTextResponse{
+		Text: plaintext.From(entry.Content),
 	}, nil
 }
 

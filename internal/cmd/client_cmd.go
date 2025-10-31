@@ -72,6 +72,7 @@ func clientCmd() *cobra.Command {
 	cmd.Flags().Var(&flags.Codec, "codec", "Codec to use for the client")
 
 	cmd.AddCommand(clientCheckHealthCmd(&flags))
+	cmd.AddCommand(clientGetEntryTextCmd(&flags))
 
 	return cmd
 }
