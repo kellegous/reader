@@ -13,7 +13,7 @@ export const Entry = ({ entry }: EntryProps) => {
 
   const [status, setStatus] = useState<proto.Entry_Status>(entry.status);
 
-  const handleClick = useCallback(async () => {
+  const handleClick = useCallback(() => {
     setStatus(proto.Entry_Status.READ);
   }, []);
 

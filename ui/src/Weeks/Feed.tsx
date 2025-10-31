@@ -3,6 +3,7 @@ import { Entry } from "./Entry";
 import { useState } from "react";
 import styles from "./Feed.module.scss";
 import { FeedIcon } from "./FeedIcon";
+import { ExpandCircleDownOutlined } from "@mui/icons-material";
 
 const DEFAULT_LIMIT = 5;
 
@@ -33,11 +34,22 @@ export const Feed = ({ feed, entries, limit = DEFAULT_LIMIT }: FeedProps) => {
         {toDisplay.map((entry) => (
           <Entry key={entry.id} entry={entry} />
         ))}
-        {entries.length > limit && (
-          <a href="#" className={styles.more} onClick={toggleShowMore}>
-            {showMore ? "Show less" : "Show more"}
-          </a>
-        )}
+        {entries.length > limit &&
+          (!showMore ? (
+            <a href="#" className={styles.more} onClick={toggleShowMore}>
+              <ExpandCircleDownOutlined color="inherit" fontSize="small" />{" "}
+              {entries.length - limit} more...
+            </a>
+          ) : (
+            <a href="#" className={styles.more} onClick={toggleShowMore}>
+              <ExpandCircleDownOutlined
+                color="inherit"
+                fontSize="small"
+                style={{ transform: "rotate(180deg)" }}
+              />{" "}
+              less...
+            </a>
+          ))}
       </div>
     </div>
   );
