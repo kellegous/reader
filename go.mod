@@ -1,11 +1,11 @@
 module github.com/kellegous/reader
 
-go 1.25.2
+go 1.25.3
 
 require (
 	al.essio.dev/pkg/shellescape v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6
-	github.com/kellegous/glue v0.10.0
+	github.com/kellegous/glue v0.11.0
 	github.com/kellegous/poop v0.6.0
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.10.1
@@ -14,7 +14,7 @@ require (
 	golang.org/x/sync v0.17.0
 	google.golang.org/protobuf v1.36.10
 	gopkg.in/yaml.v3 v3.0.1
-	miniflux.app/v2 v2.2.14-0.20251018194500-385d8bb96913
+	miniflux.app/v2 v2.2.14
 )
 
 require (
