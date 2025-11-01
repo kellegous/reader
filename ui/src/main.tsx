@@ -4,6 +4,7 @@ import "./main.scss";
 import { ReaderDataProvider } from "./ReaderDataContext";
 import { Weekday } from "./time";
 import { Weeks } from "./Weeks";
+import { SummarizerProvider } from "./SummarizerContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -12,7 +13,9 @@ createRoot(document.getElementById("root")!).render(
       numWeeks={5}
       weekday={Weekday.Monday}
     >
-      <Weeks />
+      <SummarizerProvider ollamaBaseUrl="http://localhost:11434">
+        <Weeks />
+      </SummarizerProvider>
     </ReaderDataProvider>
   </StrictMode>
 );

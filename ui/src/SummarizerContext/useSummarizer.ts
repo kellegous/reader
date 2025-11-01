@@ -6,5 +6,5 @@ export const useSummarizer = () => {
   if (!context) {
     throw new Error("useSummarizer must be used within a SummarizerProvider");
   }
-  return context.summarizer;
+  return context;
 };
