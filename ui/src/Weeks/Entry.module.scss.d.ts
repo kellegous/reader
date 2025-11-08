@@ -6,7 +6,7 @@ export type Styles = {
   removed: string;
   summary: string;
   summarize: string;
-  hidden: string;
+  hide: string;
 };
 
 export type ClassNames = keyof Styles;
