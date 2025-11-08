@@ -4,6 +4,7 @@ export type Styles = {
   info: string;
   read: string;
   removed: string;
+  summary: string;
 };
 
 export type ClassNames = keyof Styles;

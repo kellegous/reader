@@ -1,17 +1,20 @@
-import { useEffect, useState } from "react";
-import { Summarizer } from "./summarizer";
+import { useCallback, useState } from "react";
+import { useSummarizer } from "./useSummarizer";
 
-export const useSummary = (summarizer: Summarizer, entryId: bigint) => {
+export const useSummary = (entryId: bigint) => {
   const [summary, setSummary] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const { summarizer, available } = useSummarizer();
 
-  useEffect(() => {
+  const summarize = useCallback(() => {
+    if (!available || !summarizer) {
+      return;
+    }
+
     setLoading(true);
-    summarizer
-      .summarize(entryId)
-      .then(setSummary)
-      .finally(() => setLoading(false));
-  }, [summarizer, entryId]);
 
-  return { summary, loading };
+    summarizer.summarize(entryId, setSummary).finally(() => setLoading(false));
+  }, [available, summarizer, entryId]);
+
+  return { summary, loading, available, summarize };
 };

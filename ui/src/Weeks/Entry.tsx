@@ -3,9 +3,8 @@ import { formatElapsedTime } from "../elapsed-time";
 import { Timestamp } from "../gen/google/protobuf/timestamp";
 import styles from "./Entry.module.scss";
 import { useCallback, useState } from "react";
-import { useSummarizer } from "../SummarizerContext";
-
-const enableSummaries = false;
+import { useSummary } from "../SummarizerContext";
+const enableSummaries = true;
 export interface EntryProps {
   entry: proto.Entry;
 }
@@ -15,11 +14,24 @@ export const Entry = ({ entry }: EntryProps) => {
 
   const [status, setStatus] = useState<proto.Entry_Status>(entry.status);
 
-  const { available: summarizerAvailable } = useSummarizer();
+  const {
+    available: summaryAvailable,
+    loading: summaryLoading,
+    summarize,
+    summary,
+  } = useSummary(entry.id);
 
   const handleClick = useCallback(() => {
     setStatus(proto.Entry_Status.READ);
   }, []);
+
+  const handleSummarize = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      summarize();
+    },
+    [summarize]
+  );
 
   return (
     <div className={`${styles.root} ${classForStatus(status)}`}>
@@ -36,7 +48,17 @@ export const Entry = ({ entry }: EntryProps) => {
       <div className={styles.info}>
         <div>{formatElapsedTime(Timestamp.toDate(entry.publishedAt!))}</div>
         <div>{`${entry.readingTime} min`}</div>
-        {summarizerAvailable && enableSummaries && <div>summary</div>}
+        {summaryAvailable && enableSummaries && (
+          <a href="#" onClick={handleSummarize}>
+            summarize
+          </a>
+        )}
+      </div>
+      <div
+        className={styles.summary}
+        style={{ display: summary || summaryLoading ? "block" : "none" }}
+      >
+        {summary}
       </div>
     </div>
   );

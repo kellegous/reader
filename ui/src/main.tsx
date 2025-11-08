@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")!).render(
       numWeeks={5}
       weekday={Weekday.Monday}
     >
-      <SummarizerProvider ollamaBaseUrl="http://localhost:11434">
+      <SummarizerProvider ollamaBaseUrl="https://bender.finch-mahi.ts.net">
         <Weeks />
       </SummarizerProvider>
     </ReaderDataProvider>
