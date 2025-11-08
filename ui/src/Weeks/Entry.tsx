@@ -4,7 +4,7 @@ import { Timestamp } from "../gen/google/protobuf/timestamp";
 import styles from "./Entry.module.scss";
 import { useCallback, useState } from "react";
 import { useSummary } from "../SummarizerContext";
-const enableSummaries = true;
+
 export interface EntryProps {
   entry: proto.Entry;
 }
@@ -33,6 +33,8 @@ export const Entry = ({ entry }: EntryProps) => {
     [summarize]
   );
 
+  const showSummary = summary || summaryLoading;
+
   return (
     <div className={`${styles.root} ${classForStatus(status)}`}>
       <div className={styles.title}>
@@ -48,15 +50,16 @@ export const Entry = ({ entry }: EntryProps) => {
       <div className={styles.info}>
         <div>{formatElapsedTime(Timestamp.toDate(entry.publishedAt!))}</div>
         <div>{`${entry.readingTime} min`}</div>
-        {summaryAvailable && enableSummaries && (
-          <a href="#" onClick={handleSummarize}>
+        {summaryAvailable && !showSummary && (
+          <a href="#" onClick={handleSummarize} className={styles.summarize}>
             summarize
           </a>
         )}
       </div>
       <div
-        className={styles.summary}
-        style={{ display: summary || summaryLoading ? "block" : "none" }}
+        className={
+          showSummary ? styles.summary : `${styles.summary} ${styles.hidden}`
+        }
       >
         {summary}
       </div>

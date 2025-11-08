@@ -24,9 +24,22 @@
     gap: 1em;
     font-size: var(--font-size-x-small);
     color: #aaa;
+    margin: 0.25em 0;
+
+    > .summarize {
+      color: #aaa;
+      &:hover {
+        color: #fff;
+      }
+
+      &.hidden {
+        display: none;
+      }
+    }
   }
 
   > .summary {
     color: #999;
+    margin: 0.5em 0;
   }
 }
