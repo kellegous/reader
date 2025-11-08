@@ -13,12 +13,13 @@ export const Entry = ({ entry }: EntryProps) => {
   const url = `/unread/entry/${entry.id}`;
 
   const [status, setStatus] = useState<proto.Entry_Status>(entry.status);
+  const [showSummary, setShowSummary] = useState(false);
 
   const {
     available: summaryAvailable,
-    loading: summaryLoading,
     summarize,
     summary,
+    loading: summaryLoading,
   } = useSummary(entry.id);
 
   const handleClick = useCallback(() => {
@@ -28,12 +29,19 @@ export const Entry = ({ entry }: EntryProps) => {
   const handleSummarize = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
+      setShowSummary(true);
       summarize();
     },
     [summarize]
   );
 
-  const showSummary = summary || summaryLoading;
+  const handleHideSummary = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      setShowSummary(false);
+    },
+    []
+  );
 
   return (
     <div className={`${styles.root} ${classForStatus(status)}`}>
@@ -56,13 +64,16 @@ export const Entry = ({ entry }: EntryProps) => {
           </a>
         )}
       </div>
-      <div
-        className={
-          showSummary ? styles.summary : `${styles.summary} ${styles.hidden}`
-        }
-      >
-        {summary}
-      </div>
+      {showSummary && (
+        <div className={styles.summary}>
+          <div>{summary}</div>
+          {!summaryLoading && (
+            <a href="#" onClick={handleHideSummary} className={styles.hide}>
+              hide
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 };

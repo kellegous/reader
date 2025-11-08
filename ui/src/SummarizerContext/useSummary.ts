@@ -11,10 +11,14 @@ export const useSummary = (entryId: bigint) => {
       return;
     }
 
+    if (loading || summary !== "") {
+      return;
+    }
+
     setLoading(true);
 
     summarizer.summarize(entryId, setSummary).finally(() => setLoading(false));
-  }, [available, summarizer, entryId]);
+  }, [available, summarizer, entryId, loading, summary]);
 
   return { summary, loading, available, summarize };
 };
