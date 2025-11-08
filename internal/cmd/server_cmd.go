@@ -16,6 +16,7 @@ import (
 
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
+	"github.com/kellegous/reader"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
@@ -142,7 +143,9 @@ func runServer(cmd *cobra.Command, flags *serverFlags) error {
 			headers[authProxyHeader] = l
 			username = l
 		}
-		ch <- web.Serve(ctx, l, mf, assets, headers, username)
+		ch <- web.Serve(ctx, l, mf, assets, headers, username, &reader.Config{
+			OllamaUrl: cfg.OllamaURL,
+		})
 	}()
 
 	select {

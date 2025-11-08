@@ -30,6 +30,7 @@ export const ReaderDataProvider = ({
 
   const [state, setState] = useState<ReaderDataState>({
     me: null,
+    config: null,
     weeks: [],
     loading: false,
     until,
@@ -59,6 +60,7 @@ const loadState = async (
 ) => {
   let state: ReaderDataState = {
     me: null,
+    config: null,
     weeks: [],
     loading: true,
     until,
@@ -74,6 +76,10 @@ const loadState = async (
   await Promise.all([
     client.GetMe({}).then(({ user }) => {
       state = { ...state, me: user ?? null };
+      setState(state);
+    }),
+    client.GetConfig({}).then(({ config }) => {
+      state = { ...state, config: config ?? null };
       setState(state);
     }),
     client

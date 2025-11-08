@@ -8,9 +8,10 @@ import (
 	"net/url"
 
 	"github.com/kellegous/poop"
+	"miniflux.app/v2/client"
+
 	"github.com/kellegous/reader"
 	"github.com/kellegous/reader/internal/miniflux"
-	"miniflux.app/v2/client"
 )
 
 func getMinifluxClient(
@@ -30,6 +31,8 @@ func getMinifluxClient(
 	return ms.Client(client.WithAPIKey(key.Token)), nil
 }
 
+// TODO(kellegous): consolidate these args into a single options
+// struct.
 func Serve(
 	ctx context.Context,
 	l net.Listener,
@@ -37,6 +40,7 @@ func Serve(
 	assets http.Handler,
 	headers map[string]string,
 	username string,
+	cfg *reader.Config,
 ) error {
 	beURL, err := url.Parse(ms.BaseURL())
 	if err != nil {
@@ -62,6 +66,7 @@ func Serve(
 	m.Handle("/", p)
 	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{
 		client: api,
+		cfg:    cfg,
 	}))
 	m.Handle("/ui/", assets)
 

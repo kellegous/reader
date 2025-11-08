@@ -8,10 +8,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const defaultOllamaURL = "http://localhost:11434"
+
 type Info struct {
-	Postgres Postgres `yaml:"postgres"`
-	Miniflux Miniflux `yaml:"miniflux"`
-	Web      Web      `yaml:"web"`
+	Postgres  Postgres `yaml:"postgres"`
+	Miniflux  Miniflux `yaml:"miniflux"`
+	Web       Web      `yaml:"web"`
+	OllamaURL string   `yaml:"ollama-url"`
 }
 
 func (n *Info) Read(r io.Reader, base string) error {
@@ -37,6 +40,10 @@ func (n *Info) Read(r io.Reader, base string) error {
 
 	if err := n.Web.apply(); err != nil {
 		return err
+	}
+
+	if n.OllamaURL == "" {
+		n.OllamaURL = defaultOllamaURL
 	}
 
 	return nil

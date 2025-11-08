@@ -21,6 +21,7 @@ import (
 
 type rpc struct {
 	client *client.Client
+	cfg    *reader.Config
 }
 
 var _ reader.Reader = (*rpc)(nil)
@@ -91,6 +92,12 @@ func (r *rpc) GetEntryText(ctx context.Context, req *reader.GetEntryTextRequest)
 
 	return &reader.GetEntryTextResponse{
 		Text: plaintext.From(entry.Content),
+	}, nil
+}
+
+func (r *rpc) GetConfig(ctx context.Context, req *emptypb.Empty) (*reader.GetConfigResponse, error) {
+	return &reader.GetConfigResponse{
+		Config: r.cfg,
 	}, nil
 }
 

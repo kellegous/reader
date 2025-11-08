@@ -11,6 +11,7 @@ service Reader {
   rpc GetEntries(GetEntriesRequest) returns (GetEntriesResponse) {}
   rpc GetMe(google.protobuf.Empty) returns (GetMeResponse) {}
   rpc GetEntryText(GetEntryTextRequest) returns (GetEntryTextResponse) {}
+  rpc GetConfig(google.protobuf.Empty) returns (GetConfigResponse) {}
 }
 
 message GetEntryTextRequest { int64 entry_id = 1; }
@@ -37,6 +38,10 @@ message GetEntriesRequest {
 message GetEntriesResponse { repeated Entry entries = 1; }
 
 message GetMeResponse { User user = 1; }
+
+message GetConfigResponse { Config config = 1; }
+
+message Config { string ollama_url = 1; }
 
 message User {
   int64 id = 1;
