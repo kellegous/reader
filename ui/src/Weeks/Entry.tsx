@@ -26,21 +26,28 @@ export const Entry = ({ entry }: EntryProps) => {
     setStatus(proto.Entry_Status.READ);
   }, []);
 
-  const handleSummarize = useCallback(
+  const toggleSummary = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
-      setShowSummary(true);
-      summarize();
+      setShowSummary(!showSummary);
+      if (!showSummary) {
+        summarize();
+      }
     },
-    [summarize]
+    [showSummary, summarize]
   );
 
-  const handleHideSummary = useCallback(
+  // TODO(kellegous): we have to submit the rpc request for this.
+  const toggleStatus = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
-      setShowSummary(false);
+      setStatus(
+        status === proto.Entry_Status.READ
+          ? proto.Entry_Status.UNREAD
+          : proto.Entry_Status.READ
+      );
     },
-    []
+    [status]
   );
 
   return (
@@ -58,17 +65,24 @@ export const Entry = ({ entry }: EntryProps) => {
       <div className={styles.info}>
         <div>{formatElapsedTime(Timestamp.toDate(entry.publishedAt!))}</div>
         <div>{`${entry.readingTime} min`}</div>
-        {summaryAvailable && !showSummary && (
-          <a href="#" onClick={handleSummarize} className={styles.summarize}>
-            summarize
+        <div>
+          <a href="#" onClick={toggleStatus}>
+            {status === proto.Entry_Status.READ ? "mark unread" : "mark read"}
           </a>
+        </div>
+        {summaryAvailable && (
+          <div>
+            <a href="#" onClick={toggleSummary}>
+              {showSummary ? "hide summary" : "show summary"}
+            </a>
+          </div>
         )}
       </div>
       {showSummary && (
         <div className={styles.summary}>
           <div>{summary}</div>
           {!summaryLoading && (
-            <a href="#" onClick={handleHideSummary} className={styles.hide}>
+            <a href="#" onClick={toggleSummary} className={styles.hide}>
               hide
             </a>
           )}
