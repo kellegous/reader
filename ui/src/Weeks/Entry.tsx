@@ -3,8 +3,8 @@ import { formatElapsedTime } from "../elapsed-time";
 import { Timestamp } from "../gen/google/protobuf/timestamp";
 import styles from "./Entry.module.scss";
 import { useCallback, useState } from "react";
-import { useSummary } from "../SummarizerContext";
 import { useReaderData } from "../ReaderDataContext";
+import { useSummary } from "../SummarizerContext";
 
 export interface EntryProps {
   entry: proto.Entry;

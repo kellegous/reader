@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Weekday } from "../time";
 import { Model } from "./model";
 import { ModelContext } from "./ModelContext";
@@ -26,6 +26,16 @@ export const ModelProvider = ({
     setModel(await Model.load(baseUrl, until, numWeeks, weekday));
     setLoading(false);
   }, [until, numWeeks, weekday, baseUrl]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (model) {
+      model.withSummarizer().then(setModel);
+    }
+  }, [model]);
 
   return (
     <ModelContext.Provider value={{ model, loading, refresh }}>

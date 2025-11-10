@@ -9,6 +9,7 @@ import {
 } from "../gen/reader";
 import { ReaderClientJSON } from "../gen/reader.twirp";
 import { Week, Weekday } from "../time";
+import { Summarizer } from "./summarizer";
 
 export class Model {
   private constructor(
@@ -18,8 +19,45 @@ export class Model {
     public readonly weekday: Weekday,
     public readonly user: User,
     public readonly config: Config,
-    public readonly weeks: { week: Week; entries: Entry[] }[]
+    public readonly weeks: { week: Week; entries: Entry[] }[],
+    private readonly summarizer: Summarizer | null = null
   ) {}
+
+  get canSummarize(): boolean {
+    return this.summarizer !== null;
+  }
+
+  async summarize(entryId: bigint, setSummary: (summary: string) => void) {
+    const { summarizer } = this;
+    if (!summarizer) {
+      return;
+    }
+
+    summarizer.summarize(entryId, setSummary);
+  }
+
+  async withSummarizer() {
+    const { ollamaUrl } = this.config;
+    if (!ollamaUrl) {
+      return this;
+    }
+
+    const summarizer = await Summarizer.createIfAvailable(ollamaUrl);
+    if (!summarizer) {
+      return this;
+    }
+
+    return new Model(
+      this.client,
+      this.until,
+      this.numWeeks,
+      this.weekday,
+      this.user,
+      this.config,
+      this.weeks,
+      summarizer
+    );
+  }
 
   static async load(
     baseUrl: string,
