@@ -63,7 +63,13 @@ func Serve(
 		return poop.Chain(err)
 	}
 
-	m.Handle("/", p)
+	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			http.Redirect(w, r, "/ui/", http.StatusTemporaryRedirect)
+			return
+		}
+		p.ServeHTTP(w, r)
+	})
 	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{
 		client: api,
 		cfg:    cfg,
