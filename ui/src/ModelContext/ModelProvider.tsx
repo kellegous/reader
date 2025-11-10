@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Weekday } from "../time";
-import { Model } from "./model";
 import { ModelContext } from "./ModelContext";
+import { empty, load, ModelState } from "./model";
+import { ReaderClientJSON } from "../gen/reader.twirp";
+import { FetchRPC } from "twirp-ts";
 
 export interface ModelProviderProps {
   baseUrl: string;
@@ -18,28 +20,19 @@ export const ModelProvider = ({
   weekday,
   children,
 }: ModelProviderProps) => {
-  const [model, setModel] = useState<Model | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [model, setModel] = useState<ModelState>(
+    empty(new ReaderClientJSON(FetchRPC({ baseUrl })))
+  );
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    setModel(await Model.load(baseUrl, until, numWeeks, weekday));
-    setLoading(false);
+    load(baseUrl, until, numWeeks, weekday, setModel);
   }, [until, numWeeks, weekday, baseUrl]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  useEffect(() => {
-    if (model) {
-      model.withSummarizer().then(setModel);
-    }
-  }, [model]);
-
   return (
-    <ModelContext.Provider value={{ model, loading, refresh }}>
-      {children}
-    </ModelContext.Provider>
+    <ModelContext.Provider value={model}>{children}</ModelContext.Provider>
   );
 };

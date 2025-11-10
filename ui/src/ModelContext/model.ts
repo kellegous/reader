@@ -7,94 +7,97 @@ import {
   GetEntriesRequest_SortKey,
   User,
 } from "../gen/reader";
-import { ReaderClientJSON } from "../gen/reader.twirp";
+import { ReaderClient, ReaderClientJSON } from "../gen/reader.twirp";
 import { Week, Weekday } from "../time";
 import { Summarizer } from "./summarizer";
 
-export class Model {
-  private constructor(
-    public readonly client: ReaderClientJSON,
-    public readonly until: Date,
-    public readonly numWeeks: number,
-    public readonly weekday: Weekday,
-    public readonly user: User,
-    public readonly config: Config,
-    public readonly weeks: { week: Week; entries: Entry[] }[],
-    private readonly summarizer: Summarizer | null = null
-  ) {}
-
-  get canSummarize(): boolean {
-    return this.summarizer !== null;
-  }
-
-  async summarize(entryId: bigint, setSummary: (summary: string) => void) {
-    const { summarizer } = this;
-    if (!summarizer) {
-      return;
-    }
-
-    summarizer.summarize(entryId, setSummary);
-  }
-
-  async withSummarizer() {
-    const { ollamaUrl } = this.config;
-    if (!ollamaUrl) {
-      return this;
-    }
-
-    const summarizer = await Summarizer.createIfAvailable(ollamaUrl);
-    if (!summarizer) {
-      return this;
-    }
-
-    return new Model(
-      this.client,
-      this.until,
-      this.numWeeks,
-      this.weekday,
-      this.user,
-      this.config,
-      this.weeks,
-      summarizer
-    );
-  }
-
-  static async load(
-    baseUrl: string,
-    until: Date,
-    numWeeks: number,
-    weekday: Weekday
-  ): Promise<Model> {
-    const client = new ReaderClientJSON(FetchRPC({ baseUrl }));
-
-    const latest = Week.of(until, weekday);
-    const earliest = latest.add(-numWeeks);
-
-    const [user, config, entries] = await Promise.all([
-      client.GetMe({}).then(({ user }) => user!),
-      client.GetConfig({}).then(({ config }) => config!),
-      client
-        .GetEntries({
-          publishedAfter: Timestamp.fromDate(earliest.startsAt),
-          publishedBefore: Timestamp.fromDate(latest.endsAt),
-          sortKey: GetEntriesRequest_SortKey.PUBLISHED_AT,
-          order: GetEntriesRequest_Order.DESC,
-          includeContent: false,
-        })
-        .then(({ entries }) => entries),
-    ]);
-
-    return new Model(
-      client,
-      until,
-      numWeeks,
-      weekday,
-      user,
-      config,
-      Array.from(toWeeks(latest, earliest, weekday, entries))
-    );
-  }
+export interface ModelState {
+  client: ReaderClient;
+  until: Date;
+  numWeeks: number;
+  weekday: Weekday;
+  user: User | null;
+  config: Config | null;
+  weeks: { week: Week; entries: Entry[] }[];
+  summarizer: Summarizer | null;
+  loading: boolean;
+  refresh: () => Promise<void>;
 }
+
+export const empty = (client: ReaderClient): ModelState => ({
+  client,
+  until: new Date(),
+  numWeeks: 5,
+  weekday: Weekday.Monday,
+  user: null,
+  config: null,
+  weeks: [],
+  summarizer: null,
+  loading: false,
+  refresh: () => Promise.resolve(),
+});
+
+export const load = async (
+  baseUrl: string,
+  until: Date,
+  numWeeks: number,
+  weekday: Weekday,
+  setState: (fn: (model: ModelState) => ModelState) => void
+): Promise<void> => {
+  const client = new ReaderClientJSON(FetchRPC({ baseUrl }));
+  setState((model) => ({ ...model, loading: true }));
+
+  const [, config] = await Promise.all([
+    getUser(client).then((user) => setState((model) => ({ ...model, user }))),
+    getConfig(client).then((config) => {
+      setState((model) => ({ ...model, config }));
+      return config;
+    }),
+    getWeeks(client, until, numWeeks, weekday).then(({ weeks }) =>
+      setState((model) => ({ ...model, weeks }))
+    ),
+  ]).finally(() => setState((model) => ({ ...model, loading: false })));
+
+  const summarizer = await getSummarizer(config);
+  setState((model) => ({ ...model, summarizer }));
+};
+
+const getUser = async (client: ReaderClient): Promise<User> => {
+  const { user } = await client.GetMe({});
+  return user!;
+};
+
+export const getConfig = async (client: ReaderClient): Promise<Config> => {
+  const { config } = await client.GetConfig({});
+  return config!;
+};
+
+const getWeeks = async (
+  client: ReaderClient,
+  until: Date,
+  numWeeks: number,
+  weekday: Weekday
+): Promise<{ weeks: { week: Week; entries: Entry[] }[] }> => {
+  const latest = Week.of(until, weekday);
+  const earliest = latest.add(-numWeeks);
+  const entries = await client.GetEntries({
+    publishedAfter: Timestamp.fromDate(earliest.startsAt),
+    publishedBefore: Timestamp.fromDate(latest.endsAt),
+    sortKey: GetEntriesRequest_SortKey.PUBLISHED_AT,
+    order: GetEntriesRequest_Order.DESC,
+    includeContent: false,
+  });
+  return {
+    weeks: Array.from(toWeeks(latest, earliest, weekday, entries.entries)),
+  };
+};
+
+const getSummarizer = async (config: Config): Promise<Summarizer | null> => {
+  if (!config || !config.ollamaUrl) {
+    return null;
+  }
+  return await Summarizer.createIfAvailable(config.ollamaUrl);
+};
 
 function* toWeeks(
   latest: Week,
