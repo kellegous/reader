@@ -12,7 +12,7 @@ export interface EntryProps {
 export const Entry = ({ entry }: EntryProps) => {
   const url = `/unread/entry/${entry.id}`;
 
-  const [status, setStatus] = useState<proto.Entry_Status>(entry.status);
+  const [status, setStatus] = useState<proto.Status>(entry.status);
   const [showSummary, setShowSummary] = useState(false);
 
   const {
@@ -23,7 +23,7 @@ export const Entry = ({ entry }: EntryProps) => {
   } = useSummary(entry.id);
 
   const handleClick = useCallback(() => {
-    setStatus(proto.Entry_Status.READ);
+    setStatus(proto.Status.READ);
   }, []);
 
   const toggleSummary = useCallback(
@@ -42,9 +42,7 @@ export const Entry = ({ entry }: EntryProps) => {
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
       setStatus(
-        status === proto.Entry_Status.READ
-          ? proto.Entry_Status.UNREAD
-          : proto.Entry_Status.READ
+        status === proto.Status.READ ? proto.Status.UNREAD : proto.Status.READ
       );
     },
     [status]
@@ -67,7 +65,7 @@ export const Entry = ({ entry }: EntryProps) => {
         <div>{`${entry.readingTime} min`}</div>
         <div>
           <a href="#" onClick={toggleStatus}>
-            {status === proto.Entry_Status.READ ? "mark unread" : "mark read"}
+            {status === proto.Status.READ ? "mark unread" : "mark read"}
           </a>
         </div>
         {summaryAvailable && (
@@ -92,11 +90,11 @@ export const Entry = ({ entry }: EntryProps) => {
   );
 };
 
-const classForStatus = (status: proto.Entry_Status) => {
+const classForStatus = (status: proto.Status) => {
   switch (status) {
-    case proto.Entry_Status.READ:
+    case proto.Status.READ:
       return styles.read;
-    case proto.Entry_Status.REMOVED:
+    case proto.Status.REMOVED:
       return styles.removed;
     default:
       return "";

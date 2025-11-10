@@ -101,6 +101,18 @@ func (r *rpc) GetConfig(ctx context.Context, req *emptypb.Empty) (*reader.GetCon
 	}, nil
 }
 
+func (r *rpc) SetEntryStatus(ctx context.Context, req *reader.SetEntryStatusRequest) (*emptypb.Empty, error) {
+	status := strings.ToLower(req.Status.String())
+	if err := r.client.UpdateEntriesContext(
+		ctx,
+		[]int64{req.EntryId},
+		status,
+	); err != nil {
+		return nil, newBackendError(ctx, err)
+	}
+	return &emptypb.Empty{}, nil
+}
+
 func toUser(user *client.User) *reader.User {
 	return &reader.User{
 		Id:       user.ID,
@@ -121,12 +133,12 @@ func toFeed(feed *client.Feed) *reader.Feed {
 	}
 }
 
-func toStatus(status string) (reader.Entry_Status, error) {
-	s, ok := reader.Entry_Status_value[strings.ToUpper(status)]
+func toStatus(status string) (reader.Status, error) {
+	s, ok := reader.Status_value[strings.ToUpper(status)]
 	if !ok {
 		return 0, fmt.Errorf("invalid status: %s", status)
 	}
-	return reader.Entry_Status(s), nil
+	return reader.Status(s), nil
 }
 
 func toEntry(
