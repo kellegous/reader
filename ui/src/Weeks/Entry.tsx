@@ -4,6 +4,7 @@ import { Timestamp } from "../gen/google/protobuf/timestamp";
 import styles from "./Entry.module.scss";
 import { useCallback, useState } from "react";
 import { useSummary } from "../SummarizerContext";
+import { useReaderData } from "../ReaderDataContext";
 
 export interface EntryProps {
   entry: proto.Entry;
@@ -22,6 +23,8 @@ export const Entry = ({ entry }: EntryProps) => {
     loading: summaryLoading,
   } = useSummary(entry.id);
 
+  const { updateEntryStatus } = useReaderData();
+
   const handleClick = useCallback(() => {
     setStatus(proto.Status.READ);
   }, []);
@@ -37,15 +40,15 @@ export const Entry = ({ entry }: EntryProps) => {
     [showSummary, summarize]
   );
 
-  // TODO(kellegous): we have to submit the rpc request for this.
   const toggleStatus = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
-      setStatus(
-        status === proto.Status.READ ? proto.Status.UNREAD : proto.Status.READ
-      );
+      const newStatus =
+        status === proto.Status.READ ? proto.Status.UNREAD : proto.Status.READ;
+      setStatus(newStatus);
+      updateEntryStatus(entry.id, newStatus);
     },
-    [status]
+    [status, updateEntryStatus, entry]
   );
 
   return (

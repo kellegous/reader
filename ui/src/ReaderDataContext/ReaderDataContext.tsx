@@ -1,4 +1,4 @@
-import { User, Entry, Config } from "../gen/reader";
+import { User, Entry, Config, Status } from "../gen/reader";
 import { createContext } from "react";
 import { Week } from "../time";
 
@@ -10,6 +10,7 @@ export interface ReaderDataState {
   until: Date;
   numWeeks: number;
   refresh: () => Promise<void>;
+  updateEntryStatus: (entryId: bigint, status: Status) => Promise<void>;
 }
 
 export const ReaderDataContext = createContext<ReaderDataState>({
@@ -20,4 +21,5 @@ export const ReaderDataContext = createContext<ReaderDataState>({
   until: new Date(),
   numWeeks: 5,
   refresh: () => Promise.resolve(),
+  updateEntryStatus: () => Promise.resolve(),
 });

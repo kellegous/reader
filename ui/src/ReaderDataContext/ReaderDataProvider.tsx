@@ -8,6 +8,7 @@ import {
   GetEntriesRequest_SortKey,
   GetEntriesRequest_Order,
   Entry,
+  Status,
 } from "../gen/reader";
 
 export interface ReaderDataProviderProps {
@@ -23,10 +24,26 @@ export const ReaderDataProvider = ({
   weekday,
   children,
 }: ReaderDataProviderProps) => {
+  const updateEntryStatus = useCallback(
+    async (entryId: bigint, status: Status) => {
+      const client = new ReaderClientJSON(FetchRPC({ baseUrl: "/twirp" }));
+      await client.SetEntryStatus({ entryId, status });
+    },
+    []
+  );
+
   const refresh = useCallback(async () => {
     const client = new ReaderClientJSON(FetchRPC({ baseUrl: "/twirp" }));
-    await loadState(client, until, numWeeks, weekday, setState, refresh);
-  }, [until, numWeeks, weekday]);
+    await loadState(
+      client,
+      until,
+      numWeeks,
+      weekday,
+      setState,
+      refresh,
+      updateEntryStatus
+    );
+  }, [until, numWeeks, weekday, updateEntryStatus]);
 
   const [state, setState] = useState<ReaderDataState>({
     me: null,
@@ -36,12 +53,21 @@ export const ReaderDataProvider = ({
     until,
     numWeeks,
     refresh,
+    updateEntryStatus,
   });
 
   useEffect(() => {
     const client = new ReaderClientJSON(FetchRPC({ baseUrl: "/twirp" }));
-    loadState(client, until, numWeeks, weekday, setState, refresh);
-  }, [until, numWeeks, weekday, refresh]);
+    loadState(
+      client,
+      until,
+      numWeeks,
+      weekday,
+      setState,
+      refresh,
+      updateEntryStatus
+    );
+  }, [until, numWeeks, weekday, refresh, updateEntryStatus]);
 
   return (
     <ReaderDataContext.Provider value={state}>
@@ -56,7 +82,8 @@ const loadState = async (
   numWeeks: number,
   weekday: Weekday,
   setState: (state: ReaderDataState) => void,
-  refresh: () => Promise<void>
+  refresh: () => Promise<void>,
+  updateEntryStatus: (entryId: bigint, status: Status) => Promise<void>
 ) => {
   let state: ReaderDataState = {
     me: null,
@@ -66,6 +93,7 @@ const loadState = async (
     until,
     numWeeks,
     refresh,
+    updateEntryStatus,
   };
 
   setState(state);
