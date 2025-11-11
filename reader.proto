@@ -47,7 +47,13 @@ message SetEntryStatusRequest {
   Status status = 2;
 }
 
-message Config { string ollama_url = 1; }
+message Config {
+  message Ollama {
+    string url = 1;
+    string model = 2;
+  }
+  Ollama ollama = 1;
+}
 
 message User {
   int64 id = 1;

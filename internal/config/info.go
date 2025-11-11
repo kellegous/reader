@@ -11,10 +11,10 @@ import (
 const defaultOllamaURL = "http://localhost:11434"
 
 type Info struct {
-	Postgres  Postgres `yaml:"postgres"`
-	Miniflux  Miniflux `yaml:"miniflux"`
-	Web       Web      `yaml:"web"`
-	OllamaURL string   `yaml:"ollama-url"`
+	Postgres Postgres `yaml:"postgres"`
+	Miniflux Miniflux `yaml:"miniflux"`
+	Web      Web      `yaml:"web"`
+	Ollama   Ollama   `yaml:"ollama"`
 }
 
 func (n *Info) Read(r io.Reader, base string) error {
@@ -42,9 +42,7 @@ func (n *Info) Read(r io.Reader, base string) error {
 		return err
 	}
 
-	if n.OllamaURL == "" {
-		n.OllamaURL = defaultOllamaURL
-	}
+	n.Ollama.apply()
 
 	return nil
 }

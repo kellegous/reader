@@ -105,10 +105,15 @@ const getWeeks = async (
 };
 
 const getSummarizer = async (config: Config): Promise<Summarizer | null> => {
-  if (!config || !config.ollamaUrl) {
+  if (!config) {
     return null;
   }
-  return await Summarizer.createIfAvailable(config.ollamaUrl);
+  const { url, model } = config.ollama!;
+  if (!url) {
+    return null;
+  }
+
+  return await Summarizer.createIfAvailable(url, model || "gemma3:27b");
 };
 
 function* toWeeks(

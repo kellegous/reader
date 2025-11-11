@@ -19,27 +19,32 @@ interface Event {
 export class Summarizer {
   constructor(
     private readonly client: ReaderClientJSON,
-    private readonly baseUrl: string
+    private readonly baseUrl: string,
+    private readonly model: string
   ) {}
 
   async summarize(
     entryId: bigint,
     setSummary: (summary: string) => void
   ): Promise<string> {
-    const { client, baseUrl } = this;
+    const { client, baseUrl, model } = this;
     const { text } = await client.GetEntryText({ entryId });
     return streamSummary(
-      await requestSummary(baseUrl, "gemma3:27b", text),
+      await requestSummary(baseUrl, model, text),
       setSummary
     );
   }
 
-  static async createIfAvailable(baseUrl: string): Promise<Summarizer | null> {
+  static async createIfAvailable(
+    baseUrl: string,
+    model: string
+  ): Promise<Summarizer | null> {
     try {
       await fetch(`${baseUrl}/api/ps`);
       return new Summarizer(
         new ReaderClientJSON(FetchRPC({ baseUrl: "/twirp" })),
-        baseUrl
+        baseUrl,
+        model
       );
     } catch {
       return null;

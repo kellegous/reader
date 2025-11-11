@@ -144,7 +144,10 @@ func runServer(cmd *cobra.Command, flags *serverFlags) error {
 			username = l
 		}
 		ch <- web.Serve(ctx, l, mf, assets, headers, username, &reader.Config{
-			OllamaUrl: cfg.OllamaURL,
+			Ollama: &reader.Config_Ollama{
+				Url:   cfg.Ollama.URL,
+				Model: cfg.Ollama.Model,
+			},
 		})
 	}()
 
