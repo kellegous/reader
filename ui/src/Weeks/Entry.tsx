@@ -3,8 +3,9 @@ import { formatElapsedTime } from "../elapsed-time";
 import { Timestamp } from "../gen/google/protobuf/timestamp";
 import styles from "./Entry.module.scss";
 import { useCallback, useState } from "react";
-import { useReaderData } from "../ReaderDataContext";
-import { useSummary } from "../SummarizerContext";
+// import { useReaderData } from "../ReaderDataContext";
+// import { useSummary } from "../SummarizerContext";
+import { useModel, useSummary } from "../ModelContext";
 
 export interface EntryProps {
   entry: proto.Entry;
@@ -23,7 +24,7 @@ export const Entry = ({ entry }: EntryProps) => {
     loading: summaryLoading,
   } = useSummary(entry.id);
 
-  const { updateEntryStatus } = useReaderData();
+  const { updateEntryStatus } = useModel();
 
   const handleClick = useCallback(() => {
     setStatus(proto.Status.READ);

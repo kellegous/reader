@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useModel } from "./useModel";
 
 export const useSummary = (entryId: bigint) => {
@@ -6,7 +6,7 @@ export const useSummary = (entryId: bigint) => {
   const [loading, setLoading] = useState(false);
   const { summarizer } = useModel();
 
-  useEffect(() => {
+  const summarize = useCallback(async () => {
     if (!summarizer) {
       return;
     }
@@ -16,14 +16,14 @@ export const useSummary = (entryId: bigint) => {
     }
 
     setLoading(true);
-    summarizer.summarize(entryId, setSummary).finally(() => setLoading(false));
-  }, [summarizer, entryId, loading, summary]);
+    await summarizer.summarize(entryId, setSummary);
+    setLoading(false);
+  }, [summarizer, loading, summary, entryId]);
 
   return {
     summary,
     loading,
     available: summarizer !== null,
-    summarize: () =>
-      summarizer?.summarize(entryId, setSummary) ?? Promise.resolve(""),
+    summarize,
   };
 };

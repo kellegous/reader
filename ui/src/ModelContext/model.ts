@@ -5,6 +5,7 @@ import {
   Entry,
   GetEntriesRequest_Order,
   GetEntriesRequest_SortKey,
+  Status,
   User,
 } from "../gen/reader";
 import { ReaderClient, ReaderClientJSON } from "../gen/reader.twirp";
@@ -22,20 +23,31 @@ export interface ModelState {
   summarizer: Summarizer | null;
   loading: boolean;
   refresh: () => Promise<void>;
+  updateEntryStatus: (entryId: bigint, status: Status) => Promise<void>;
 }
 
-export const empty = (client: ReaderClient): ModelState => ({
-  client,
-  until: new Date(),
-  numWeeks: 5,
-  weekday: Weekday.Monday,
-  user: null,
-  config: null,
-  weeks: [],
-  summarizer: null,
-  loading: false,
-  refresh: () => Promise.resolve(),
-});
+export const empty = (client: ReaderClient): ModelState => {
+  const updateEntryStatus = async (
+    entryId: bigint,
+    status: Status
+  ): Promise<void> => {
+    await client.SetEntryStatus({ entryId, status });
+  };
+
+  return {
+    client,
+    until: new Date(),
+    numWeeks: 5,
+    weekday: Weekday.Monday,
+    user: null,
+    config: null,
+    weeks: [],
+    summarizer: null,
+    loading: false,
+    refresh: () => Promise.resolve(),
+    updateEntryStatus,
+  };
+};
 
 export const load = async (
   baseUrl: string,

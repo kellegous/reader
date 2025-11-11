@@ -1,11 +1,12 @@
-import { useReaderData } from "../ReaderDataContext";
 import styles from "./Weeks.module.scss";
 import { Entry, Feed } from "../gen/reader";
 import { useMemo } from "react";
 import { Week } from "./Week";
+import { useModel } from "../ModelContext";
 
 export const Weeks = () => {
-  const { weeks } = useReaderData();
+  // const { weeks } = useReaderData();
+  const { weeks } = useModel();
 
   const groupedWeeks = useMemo(() => {
     return weeks.map(({ week, entries }) => ({
