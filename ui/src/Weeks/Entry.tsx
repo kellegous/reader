@@ -3,9 +3,9 @@ import { formatElapsedTime } from "../elapsed-time";
 import { Timestamp } from "../gen/google/protobuf/timestamp";
 import styles from "./Entry.module.scss";
 import { useCallback, useState } from "react";
-// import { useReaderData } from "../ReaderDataContext";
-// import { useSummary } from "../SummarizerContext";
 import { useModel, useSummary } from "../ModelContext";
+
+import "highlight.js/styles/github-dark-dimmed.css";
 
 export interface EntryProps {
   entry: proto.Entry;
@@ -82,7 +82,7 @@ export const Entry = ({ entry }: EntryProps) => {
       </div>
       {showSummary && (
         <div className={styles.summary}>
-          <div>{summary}</div>
+          <div dangerouslySetInnerHTML={{ __html: summary }}></div>
           {!summaryLoading && (
             <a href="#" onClick={toggleSummary} className={styles.hide}>
               hide

@@ -47,6 +47,10 @@
     color: #999;
     margin: 0.5em 0;
 
+    > div > p {
+      margin: 0;
+    }
+
     > .hide {
       font-size: var(--font-size-x-small);
     }
