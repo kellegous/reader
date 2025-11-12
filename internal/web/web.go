@@ -39,7 +39,7 @@ func Serve(
 	ms *miniflux.Server,
 	assets http.Handler,
 	headers map[string]string,
-	username string,
+	api *client.Client,
 	cfg *reader.Config,
 ) error {
 	beURL, err := url.Parse(ms.BaseURL())
@@ -56,11 +56,6 @@ func Serve(
 		for k, v := range headers {
 			r.Header.Add(k, v)
 		}
-	}
-
-	api, err := getMinifluxClient(ctx, ms, username)
-	if err != nil {
-		return poop.Chain(err)
 	}
 
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
