@@ -36,6 +36,12 @@ func Serve(
 		client: api,
 		cfg:    cfg,
 	}))
+	// NOTE(kellegous):
+	// when using a auth_proxy_header, miniflux only uses that to create
+	// a new session (if there isn't one already). New sessions are created
+	// by the / path. We highjack that path to redirect it to /ui/ which means
+	// we break authentication for miniflux. This creates an endpoint that can
+	// be called by /ui/ to ensure there is a valid session.
 	m.Handle("/refresh-session", newSessionRefresher(beURL, headers))
 	m.Handle("/ui/", assets)
 
