@@ -52,10 +52,10 @@ func Serve(
 	p := httputil.NewSingleHostReverseProxy(beURL)
 	dir := p.Director
 	p.Director = func(r *http.Request) {
-		dir(r)
 		for k, v := range headers {
 			r.Header.Add(k, v)
 		}
+		dir(r)
 	}
 
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
