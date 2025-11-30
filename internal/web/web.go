@@ -7,29 +7,11 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/kellegous/poop"
 	"miniflux.app/v2/client"
 
 	"github.com/kellegous/reader"
 	"github.com/kellegous/reader/internal/miniflux"
 )
-
-func getMinifluxClient(
-	ctx context.Context,
-	ms *miniflux.Server,
-	username string,
-) (*client.Client, error) {
-	if username == "" {
-		return ms.Client(), nil
-	}
-
-	key, err := ms.ProvisionUser(ctx, username)
-	if err != nil {
-		return nil, poop.Chain(err)
-	}
-
-	return ms.Client(client.WithAPIKey(key.Token)), nil
-}
 
 // TODO(kellegous): consolidate these args into a single options
 // struct.
@@ -59,10 +41,12 @@ func Serve(
 	}
 
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" {
-			http.Redirect(w, r, "/ui/", http.StatusTemporaryRedirect)
-			return
-		}
+		// TODO(knorton): This doesn't work because miniflux redirects
+		// from /unread to / and back to /unread.
+		// if r.URL.Path == "/" {
+		// 	http.Redirect(w, r, "/ui/", http.StatusTemporaryRedirect)
+		// 	return
+		// }
 		p.ServeHTTP(w, r)
 	})
 	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{
