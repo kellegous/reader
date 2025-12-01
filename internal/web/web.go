@@ -71,7 +71,7 @@ func newMinifluxProxy(beURL *url.URL, headers map[string]string) http.Handler {
 
 func newSessionRefresher(beURL *url.URL, headers map[string]string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, beURL.String()+"/", nil)
+		req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, beURL.String(), nil)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
