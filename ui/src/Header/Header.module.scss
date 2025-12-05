@@ -1,0 +1,24 @@
+.root {
+  margin: 1em 0;
+  padding: 20px;
+
+  > .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+
+    > .icon {
+      width: 32px;
+      height: 32px;
+      background-image: url("./newsmode.svg");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    > .title {
+      font-size: 1.5em;
+      font-weight: 600;
+    }
+  }
+}
