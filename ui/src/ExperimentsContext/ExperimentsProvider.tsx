@@ -1,4 +1,8 @@
-import { ExperimentsContext, ExperimentsState } from "./ExperimentsContext";
+import {
+  ExperimentsContext,
+  ExperimentsState,
+  emptyState,
+} from "./ExperimentsContext";
 import { useState, useEffect } from "react";
 
 const experimentsKey = "expermiments";
@@ -27,10 +31,6 @@ export const ExperimentsProvider = ({
       {children}
     </ExperimentsContext.Provider>
   );
-};
-
-const emptyState = {
-  showHeader: false,
 };
 
 const getState = (): ExperimentsState => {

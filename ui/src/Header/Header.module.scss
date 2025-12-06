@@ -1,24 +1,47 @@
 .root {
   margin: 1em 0;
   padding: 20px;
+  display: flex;
+  gap: 1em;
+  line-height: 32px;
 
-  > .logo {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
+  > .item {
+    > a {
+      display: flex;
+      gap: 0.25em;
+      align-items: center;
 
-    > .icon {
-      width: 32px;
-      height: 32px;
-      background-image: url("./newsmode.svg");
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
+      > .icon {
+        width: 24px;
+        height: 24px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
 
-    > .title {
-      font-size: 1.5em;
-      font-weight: 600;
+        &.unread {
+          background-image: url("./newsmode.svg");
+        }
+
+        &.feeds {
+          background-image: url("./rss.svg");
+        }
+
+        &.starred {
+          background-image: url("./star.svg");
+        }
+
+        &.settings {
+          background-image: url("./settings.svg");
+        }
+
+        &.search {
+          background-image: url("./search.svg");
+        }
+      }
+
+      > .title {
+        font-weight: 600;
+      }
     }
   }
 }

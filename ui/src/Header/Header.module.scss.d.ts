@@ -1,8 +1,15 @@
 export type Styles = {
   root: string;
-  logo: string;
+  item: string;
   icon: string;
   title: string;
+
+  // icons
+  unread: string;
+  feeds: string;
+  starred: string;
+  settings: string;
+  search: string;
 };
 
 export type ClassNames = keyof Styles;
