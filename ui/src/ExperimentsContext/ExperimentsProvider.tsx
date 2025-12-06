@@ -1,14 +1,14 @@
 import { ExperimentsContext, ExperimentsState } from "./ExperimentsContext";
 import { useState, useEffect } from "react";
 
+const experimentsKey = "expermiments";
+
 export const ExperimentsProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [state, setState] = useState<ExperimentsState>({
-    showHeader: false,
-  });
+  const [state, setState] = useState<ExperimentsState>(getState());
 
   useEffect(() => {
     return bindKey({
@@ -16,7 +16,9 @@ export const ExperimentsProvider = ({
       ctrl: true,
       shift: true,
       action: () =>
-        setState((state) => ({ ...state, showHeader: !state.showHeader })),
+        setState((state) =>
+          putState({ ...state, showHeader: !state.showHeader })
+        ),
     });
   }, []);
 
@@ -25,6 +27,27 @@ export const ExperimentsProvider = ({
       {children}
     </ExperimentsContext.Provider>
   );
+};
+
+const emptyState = {
+  showHeader: false,
+};
+
+const getState = (): ExperimentsState => {
+  try {
+    const value = localStorage.getItem(experimentsKey);
+    if (value) {
+      return JSON.parse(value);
+    }
+  } catch {
+    // fall-through
+  }
+  return emptyState;
+};
+
+const putState = (state: ExperimentsState): ExperimentsState => {
+  localStorage.setItem(experimentsKey, JSON.stringify(state));
+  return state;
 };
 
 interface KeyBinding {
