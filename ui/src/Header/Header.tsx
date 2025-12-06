@@ -33,7 +33,7 @@ export const Header = () => {
 
       <div className={styles.item}>
         <a href="/settings/">
-          <div className={`${styles.icon} ${styles.search}`}></div>
+          <div className={`${styles.icon} ${styles.settings}`}></div>
           <div className={styles.title}>settings</div>
         </a>
       </div>
