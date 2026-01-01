@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -19,14 +18,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	defaultPgPath = "/usr/lib/postgresql/14" // TODO(knorton): make this configurable
-	pgUser        = "postgres"
-)
+const pgUser = "postgres"
 
 type Server struct {
 	dataDir   string
-	pgPath    string
+	pgBinDir  string
 	pgVersion int
 }
 
@@ -44,18 +40,19 @@ func Start(
 		return nil, poop.Chain(err)
 	}
 
+	pgBinDir, err := getPgBinDir(ctx)
+	if err != nil {
+		return nil, poop.Chain(err)
+	}
+
 	s := &Server{
 		dataDir:   dataDir,
-		pgPath:    defaultPgPath,
+		pgBinDir:  pgBinDir,
 		pgVersion: version,
 	}
 
 	for _, opt := range opts {
 		opt(s)
-	}
-
-	if err := s.ensureVersionDir(); err != nil {
-		return nil, poop.Chain(err)
 	}
 
 	if err := s.initDB(ctx); err != nil {
@@ -81,7 +78,7 @@ func (s *Server) EnsureDatabase(
 		CREATE USER %s WITH ENCRYPTED PASSWORD '%s';
 		GRANT ALL PRIVILEGES ON DATABASE %s TO %s;`,
 		name, username, password, name, username)
-	if err := psql(ctx, pgUser, q); err != nil {
+	if err := s.psql(ctx, pgUser, q); err != nil {
 		return err
 	}
 
@@ -107,57 +104,9 @@ func (s *Server) Stop(ctx context.Context) error {
 	return suCommand(
 		ctx,
 		pgUser,
-		filepath.Join(s.pgPath, "bin/pg_ctl"),
+		filepath.Join(s.pgBinDir, "pg_ctl"),
 		"-D", s.dataDir,
 		"stop").Run()
-}
-
-func (s *Server) ensureVersionDir() error {
-	// if the version file isn't there, we don't need to do anything.
-	if _, err := os.Stat(filepath.Join(s.dataDir, "PG_VERSION")); errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-
-	// now, we need to move all files/dirs from the root data dir to the version dir.
-	dataDir := s.pgDataDir()
-
-	// ensure the version dir exists.
-	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(dataDir, 0700); err != nil {
-			return poop.Chain(err)
-		}
-
-		uid, gid, err := getUser(pgUser)
-		if err != nil {
-			return poop.Chain(err)
-		}
-
-		if err := os.Chown(dataDir, uid, gid); err != nil {
-			return poop.Chain(err)
-		}
-	}
-
-	files, err := os.ReadDir(s.dataDir)
-	if err != nil {
-		return poop.Chain(err)
-	}
-
-	versionName := strconv.Itoa(s.pgVersion)
-	for _, file := range files {
-
-		if file.Name() == versionName {
-			continue
-		}
-
-		if err := os.Rename(
-			filepath.Join(s.dataDir, file.Name()),
-			filepath.Join(dataDir, file.Name()),
-		); err != nil {
-			return poop.Chain(err)
-		}
-	}
-
-	return nil
 }
 
 func (s *Server) initDB(ctx context.Context) error {
@@ -183,7 +132,7 @@ func (s *Server) initDB(ctx context.Context) error {
 	c := suCommand(
 		ctx,
 		pgUser,
-		filepath.Join(s.pgPath, "bin/initdb"),
+		filepath.Join(s.pgBinDir, "initdb"),
 		"-D",
 		dataDir)
 	c.Stdout = os.Stdout
@@ -199,7 +148,7 @@ func (s *Server) waitForReady(
 		c := suCommand(
 			ctx,
 			pgUser,
-			filepath.Join(s.pgPath, "bin/pg_isready"),
+			filepath.Join(s.pgBinDir, "pg_isready"),
 			"-q")
 		if err := c.Run(); err == nil {
 			return nil
@@ -217,7 +166,7 @@ func (s *Server) start(ctx context.Context) error {
 	c := suCommand(
 		ctx,
 		pgUser,
-		filepath.Join(s.pgPath, "bin/pg_ctl"),
+		filepath.Join(s.pgBinDir, "pg_ctl"),
 		"-D",
 		s.pgDataDir(),
 		"start")
@@ -251,6 +200,18 @@ func suCommand(
 	)
 }
 
+func getPgBinDir(ctx context.Context) (string, error) {
+	c := exec.CommandContext(ctx, "pg_config", "--bindir")
+	var buf bytes.Buffer
+	c.Stdout = &buf
+
+	if err := c.Run(); err != nil {
+		return "", poop.Chain(err)
+	}
+
+	return strings.TrimSpace(buf.String()), nil
+}
+
 func getPgVersion(ctx context.Context) (int, error) {
 	c := exec.CommandContext(ctx, "pg_config", "--version")
 	var buf bytes.Buffer
@@ -269,7 +230,7 @@ func getPgVersion(ctx context.Context) (int, error) {
 	return strconv.Atoi(major)
 }
 
-func psql(
+func (s *Server) psql(
 	ctx context.Context,
 	user string,
 	sql string,
@@ -277,7 +238,7 @@ func psql(
 	c := suCommand(
 		ctx,
 		user,
-		filepath.Join(defaultPgPath, "bin/psql"))
+		filepath.Join(s.pgBinDir, "psql"))
 	c.Stdin = bytes.NewBufferString(sql)
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
