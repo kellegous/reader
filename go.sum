@@ -78,5 +78,5 @@ gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EV
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
-miniflux.app/v2 v2.2.15 h1:lKFlzDF3QwLBuk/w4btXMIrs2bwjSUkwnGeg3glKjPM=
-miniflux.app/v2 v2.2.15/go.mod h1:ewlbgrFlT/RjK3efhFzwjJUCJmmxQJ45Rb9MdN5+DSs=
+miniflux.app/v2 v2.2.16 h1:1BjRC34dCAqWQ8gyQUB6YZmiZa/zyxcASxtTUniAbcs=
+miniflux.app/v2 v2.2.16/go.mod h1:ewlbgrFlT/RjK3efhFzwjJUCJmmxQJ45Rb9MdN5+DSs=

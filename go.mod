@@ -15,7 +15,7 @@ require (
 	golang.org/x/sync v0.19.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
-	miniflux.app/v2 v2.2.15
+	miniflux.app/v2 v2.2.16
 )
 
 require (
