@@ -1,6 +1,6 @@
-import * as proto from "../gen/reader";
+import * as proto from "../gen/reader_pb";
 import { formatElapsedTime } from "../elapsed-time";
-import { Timestamp } from "../gen/google/protobuf/timestamp";
+import { timestampDate } from "@bufbuild/protobuf/wkt";
 import styles from "./Entry.module.scss";
 import { useCallback, useState } from "react";
 import { useModel, useSummary } from "../ModelContext";
@@ -38,7 +38,7 @@ export const Entry = ({ entry }: EntryProps) => {
         summarize();
       }
     },
-    [showSummary, summarize]
+    [showSummary, summarize],
   );
 
   const toggleStatus = useCallback(
@@ -49,7 +49,7 @@ export const Entry = ({ entry }: EntryProps) => {
       setStatus(newStatus);
       updateEntryStatus(entry.id, newStatus);
     },
-    [status, updateEntryStatus, entry]
+    [status, updateEntryStatus, entry],
   );
 
   return (
@@ -65,7 +65,7 @@ export const Entry = ({ entry }: EntryProps) => {
         </a>
       </div>
       <div className={styles.info}>
-        <div>{formatElapsedTime(Timestamp.toDate(entry.publishedAt!))}</div>
+        <div>{formatElapsedTime(timestampDate(entry.publishedAt!))}</div>
         <div>{`${entry.readingTime} min`}</div>
         <div>
           <a href="#" onClick={toggleStatus}>

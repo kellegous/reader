@@ -1,5 +1,5 @@
 import * as time from "../time";
-import * as proto from "../gen/reader";
+import * as proto from "../gen/reader_pb";
 import { Feed } from "./Feed";
 import styles from "./Week.module.scss";
 

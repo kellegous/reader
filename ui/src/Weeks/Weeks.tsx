@@ -1,5 +1,5 @@
 import styles from "./Weeks.module.scss";
-import { Entry, Feed } from "../gen/reader";
+import { Entry, Feed } from "../gen/reader_pb";
 import { useMemo } from "react";
 import { Week } from "./Week";
 import { useModel } from "../ModelContext";
@@ -33,6 +33,6 @@ const groupByFeed = (entries: Entry[]) => {
     byFeedId.set(f.id, { feed, entries });
   }
   return Array.from(byFeedId.values()).sort((a, b) =>
-    a.feed.title.localeCompare(b.feed.title)
+    a.feed.title.localeCompare(b.feed.title),
   );
 };

@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Weekday } from "../time";
 import { ModelContext } from "./ModelContext";
 import { empty, load, ModelState } from "./model";
-import { ReaderClientJSON } from "../gen/reader.twirp";
-import { FetchRPC } from "twirp-ts";
+import { createClient } from "@connectrpc/connect";
+import { createConnectTransport } from "@connectrpc/connect-web";
+import { Reader } from "../gen/reader_pb";
 
 export interface ModelProviderProps {
   baseUrl: string;
@@ -14,14 +15,14 @@ export interface ModelProviderProps {
 }
 
 export const ModelProvider = ({
-  baseUrl = "/twirp",
+  baseUrl = "/rpc",
   until,
   numWeeks,
   weekday,
   children,
 }: ModelProviderProps) => {
   const [model, setModel] = useState<ModelState>(
-    empty(new ReaderClientJSON(FetchRPC({ baseUrl })))
+    empty(createClient(Reader, createConnectTransport({ baseUrl }))),
   );
 
   const refresh = useCallback(async () => {

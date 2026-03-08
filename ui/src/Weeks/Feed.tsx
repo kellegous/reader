@@ -1,4 +1,4 @@
-import * as proto from "../gen/reader";
+import * as proto from "../gen/reader_pb";
 import { Entry } from "./Entry";
 import { useState } from "react";
 import styles from "./Feed.module.scss";

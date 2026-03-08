@@ -1,5 +1,6 @@
-import { FetchRPC } from "twirp-ts";
-import { ReaderClientJSON } from "../gen/reader.twirp";
+import { Client, createClient } from "@connectrpc/connect";
+import { createConnectTransport } from "@connectrpc/connect-web";
+import { Reader } from "../gen/reader_pb";
 
 export type Role = "user" | "assistant" | "system";
 
@@ -18,33 +19,33 @@ interface Event {
 
 export class Summarizer {
   constructor(
-    private readonly client: ReaderClientJSON,
+    private readonly client: Client<typeof Reader>,
     private readonly baseUrl: string,
-    private readonly model: string
+    private readonly model: string,
   ) {}
 
   async summarize(
     entryId: bigint,
-    setSummary: (summary: string) => void
+    setSummary: (summary: string) => void,
   ): Promise<string> {
     const { client, baseUrl, model } = this;
-    const { text } = await client.GetEntryText({ entryId });
+    const { text } = await client.getEntryText({ entryId });
     return streamSummary(
       await requestSummary(baseUrl, model, text),
-      setSummary
+      setSummary,
     );
   }
 
   static async createIfAvailable(
     baseUrl: string,
-    model: string
+    model: string,
   ): Promise<Summarizer | null> {
     try {
       await fetch(`${baseUrl}/api/ps`);
       return new Summarizer(
-        new ReaderClientJSON(FetchRPC({ baseUrl: "/twirp" })),
+        createClient(Reader, createConnectTransport({ baseUrl })),
         baseUrl,
-        model
+        model,
       );
     } catch {
       return null;
@@ -79,7 +80,7 @@ const requestSummary = (baseUrl: string, model: string, content: string) => {
 
 const streamSummary = async (
   res: Response,
-  setSummary: (summary: string) => void
+  setSummary: (summary: string) => void,
 ) => {
   const reader = res.body?.getReader();
   if (!reader) {

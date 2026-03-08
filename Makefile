@@ -1,5 +1,5 @@
 PROTOC_GEN_GO_VERSION := v1.36.10
-PROTOC_GEN_TWIRP_VERSION := v8.1.3
+PROTOC_GEN_CONNECT_GO_VERSION := v1.19.1
 PROTOC_VERSION := 33.0
 
 SHA = $(shell go run github.com/kellegous/glue/build/info@latest --format="{{.SHA}}")
@@ -12,11 +12,10 @@ ASSETS := \
 
 BE_PROTOS := \
 	reader.pb.go \
-	reader.twirp.go
+	reader_connect/reader.connect.go
 
 FE_PROTOS := \
-	ui/src/gen/reader.ts \
-	ui/src/gen/reader.twirp.ts
+	ui/src/gen/reader_pb.ts
 
 .PHONY: all clean develop nuke
 
@@ -33,8 +32,8 @@ bin/protoc:
 bin/protoc-gen-go:
 	GOBIN="$(CURDIR)/bin" go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GEN_GO_VERSION)
 
-bin/protoc-gen-twirp:
-	GOBIN="$(CURDIR)/bin" go install github.com/twitchtv/twirp/protoc-gen-twirp@$(PROTOC_GEN_TWIRP_VERSION)
+bin/protoc-gen-connect-go:
+	GOBIN="$(CURDIR)/bin" go install connectrpc.com/connect/cmd/protoc-gen-connect-go@$(PROTOC_GEN_CONNECT_GO_VERSION)
 
 %.pb.go: %.proto bin/protoc-gen-go bin/protoc
 	bin/protoc --proto_path=. \
@@ -43,29 +42,20 @@ bin/protoc-gen-twirp:
 		--go_opt=module=$(GO_MOD) \
 		$<
 
-%.twirp.go: %.proto bin/protoc-gen-twirp bin/protoc
+reader_connect/reader.connect.go: reader.proto bin/protoc-gen-connect-go bin/protoc
 	bin/protoc --proto_path=. \
-		--plugin=protoc-gen-twirp=bin/protoc-gen-twirp \
-		--twirp_out=. \
-		--twirp_opt=module=$(GO_MOD) \
+		--plugin=protoc-gen-connect-go=bin/protoc-gen-connect-go \
+		--connect-go_out=. \
+		--connect-go_opt=module=$(GO_MOD) \
+		--connect-go_opt=package_suffix=_connect \
 		$<
 
-ui/src/gen/%.ts: %.proto node_modules/.build
+ui/src/gen/%_pb.ts: %.proto node_modules/.build bin/protoc
 	mkdir -p $(dir $@)
-	protoc --proto_path=. \
-		--plugin=protoc-gen-ts=node_modules/.bin/protoc-gen-ts \
-		--ts_out=ui/src/gen \
-		--ts_opt=ts_nocheck,force_server_none \
-		$<
-
-ui/src/gen/%.twirp.ts: %.proto node_modules/.build
-	mkdir -p $(dir $@)
-	protoc --proto_path=. \
-		--plugin=protoc-gen-ts=node_modules/.bin/protoc-gen-ts \
-		--plugin=protoc-gen-twirp_ts=node_modules/.bin/protoc-gen-twirp_ts \
-		--twirp_ts_out=ui/src/gen \
-		--ts_out=ui/src/gen \
-		--ts_opt=ts_nocheck,force_server_none \
+	bin/protoc --proto_path=. \
+		--plugin=protoc-gen-es=node_modules/.bin/protoc-gen-es \
+		--es_out=ui/src/gen \
+		--es_opt=target=ts \
 		$<
 
 node_modules/.build:

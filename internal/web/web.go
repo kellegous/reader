@@ -11,7 +11,10 @@ import (
 
 	"github.com/kellegous/reader"
 	"github.com/kellegous/reader/internal/miniflux"
+	"github.com/kellegous/reader/reader_connect"
 )
+
+const rpcPrefix = "/rpc"
 
 // TODO(kellegous): consolidate these args into a single options
 // struct.
@@ -32,10 +35,12 @@ func Serve(
 	m := http.NewServeMux()
 
 	m.Handle("/", newMinifluxProxy(beURL, headers))
-	m.Handle(reader.ReaderPathPrefix, reader.NewReaderServer(&rpc{
+	path, handler := reader_connect.NewReaderHandler(&rpc{
 		client: api,
 		cfg:    cfg,
-	}))
+	})
+	m.Handle(rpcPrefix+path, http.StripPrefix(rpcPrefix, handler))
+
 	// NOTE(kellegous):
 	// when using a auth_proxy_header, miniflux only uses that to create
 	// a new session (if there isn't one already). New sessions are created

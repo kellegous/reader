@@ -3,6 +3,7 @@ package cmd
 import (
 	"net/http"
 
+	"connectrpc.com/connect"
 	"github.com/kellegous/poop"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -22,12 +23,9 @@ func clientCheckHealthCmd(flags *clientFlags) *cobra.Command {
 }
 
 func runClientCheckHealth(cmd *cobra.Command, flags *clientFlags) error {
-	client, err := flags.NewClient(http.DefaultClient)
-	if err != nil {
-		return poop.Chain(err)
-	}
+	client := flags.NewClient(http.DefaultClient)
 
-	if _, err := client.CheckHealth(cmd.Context(), &emptypb.Empty{}); err != nil {
+	if _, err := client.CheckHealth(cmd.Context(), connect.NewRequest(&emptypb.Empty{})); err != nil {
 		return poop.Chain(err)
 	}
 

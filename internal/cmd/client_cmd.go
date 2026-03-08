@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/kellegous/reader"
+	"github.com/kellegous/reader/reader_connect"
 	"github.com/spf13/cobra"
 )
 
@@ -45,31 +45,26 @@ const (
 
 type clientFlags struct {
 	BaseURL string
-	Codec   Codec
 }
 
-func (f *clientFlags) NewClient(client *http.Client) (reader.Reader, error) {
-	switch f.Codec {
-	case CodecProtobuf:
-		return reader.NewReaderProtobufClient(f.BaseURL, client), nil
-	case CodecJSON:
-		return reader.NewReaderJSONClient(f.BaseURL, client), nil
-	}
-	return nil, fmt.Errorf("invalid codec: %s", f.Codec)
+func (f *clientFlags) NewClient(client *http.Client) reader_connect.ReaderClient {
+	return reader_connect.NewReaderClient(client, f.BaseURL)
 }
 
 func clientCmd() *cobra.Command {
-	flags := clientFlags{
-		Codec: CodecProtobuf,
-	}
+	var flags clientFlags
 
 	cmd := &cobra.Command{
 		Use:   "client",
 		Short: "Client for the reader service",
 	}
 
-	cmd.Flags().StringVar(&flags.BaseURL, "base-url", "http://localhost:8080", "Base URL of the reader service")
-	cmd.Flags().Var(&flags.Codec, "codec", "Codec to use for the client")
+	cmd.Flags().StringVar(
+		&flags.BaseURL,
+		"base-url",
+		"http://localhost:8080/rpc/",
+		"Base URL of the reader service",
+	)
 
 	cmd.AddCommand(clientCheckHealthCmd(&flags))
 	cmd.AddCommand(clientGetEntryTextCmd(&flags))

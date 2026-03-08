@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"connectrpc.com/connect"
 	"github.com/kellegous/poop"
 	"github.com/kellegous/reader"
 	"github.com/spf13/cobra"
@@ -23,24 +24,21 @@ func clientGetEntryTextCmd(flags *clientFlags) *cobra.Command {
 }
 
 func runClientGetEntryText(cmd *cobra.Command, flags *clientFlags, idStr string) error {
-	client, err := flags.NewClient(http.DefaultClient)
-	if err != nil {
-		return poop.Chain(err)
-	}
+	client := flags.NewClient(http.DefaultClient)
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		return poop.Chain(err)
 	}
 
-	entry, err := client.GetEntryText(cmd.Context(), &reader.GetEntryTextRequest{
+	entry, err := client.GetEntryText(cmd.Context(), connect.NewRequest(&reader.GetEntryTextRequest{
 		EntryId: id,
-	})
+	}))
 	if err != nil {
 		return poop.Chain(err)
 	}
 
-	cmd.Println(entry.Text)
+	cmd.Println(entry.Msg.GetText())
 
 	return nil
 }

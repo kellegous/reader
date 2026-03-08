@@ -1,19 +1,20 @@
-import { FetchRPC } from "twirp-ts";
-import { Timestamp } from "../gen/google/protobuf/timestamp";
+import { timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
+import { Client, createClient } from "@connectrpc/connect";
+import { createConnectTransport } from "@connectrpc/connect-web";
 import {
   Config,
   Entry,
   GetEntriesRequest_Order,
   GetEntriesRequest_SortKey,
+  Reader,
   Status,
   User,
-} from "../gen/reader";
-import { ReaderClient, ReaderClientJSON } from "../gen/reader.twirp";
+} from "../gen/reader_pb";
 import { Week, Weekday } from "../time";
 import { Summarizer } from "./summarizer";
 
 export interface ModelState {
-  client: ReaderClient;
+  client: Client<typeof Reader>;
   until: Date;
   numWeeks: number;
   weekday: Weekday;
@@ -26,12 +27,12 @@ export interface ModelState {
   updateEntryStatus: (entryId: bigint, status: Status) => Promise<void>;
 }
 
-export const empty = (client: ReaderClient): ModelState => {
+export const empty = (client: Client<typeof Reader>): ModelState => {
   const updateEntryStatus = async (
     entryId: bigint,
-    status: Status
+    status: Status,
   ): Promise<void> => {
-    await client.SetEntryStatus({ entryId, status });
+    await client.setEntryStatus({ entryId, status });
   };
 
   return {
@@ -54,9 +55,9 @@ export const load = async (
   until: Date,
   numWeeks: number,
   weekday: Weekday,
-  setState: (fn: (model: ModelState) => ModelState) => void
+  setState: (fn: (model: ModelState) => ModelState) => void,
 ): Promise<void> => {
-  const client = new ReaderClientJSON(FetchRPC({ baseUrl }));
+  const client = createClient(Reader, createConnectTransport({ baseUrl }));
   setState((model) => ({ ...model, loading: true }));
 
   const [, config] = await Promise.all([
@@ -66,7 +67,7 @@ export const load = async (
       return config;
     }),
     getWeeks(client, until, numWeeks, weekday).then(({ weeks }) =>
-      setState((model) => ({ ...model, weeks }))
+      setState((model) => ({ ...model, weeks })),
     ),
   ]).finally(() => setState((model) => ({ ...model, loading: false })));
 
@@ -74,27 +75,29 @@ export const load = async (
   setState((model) => ({ ...model, summarizer }));
 };
 
-const getUser = async (client: ReaderClient): Promise<User> => {
-  const { user } = await client.GetMe({});
+const getUser = async (client: Client<typeof Reader>): Promise<User> => {
+  const { user } = await client.getMe({});
   return user!;
 };
 
-export const getConfig = async (client: ReaderClient): Promise<Config> => {
-  const { config } = await client.GetConfig({});
+export const getConfig = async (
+  client: Client<typeof Reader>,
+): Promise<Config> => {
+  const { config } = await client.getConfig({});
   return config!;
 };
 
 const getWeeks = async (
-  client: ReaderClient,
+  client: Client<typeof Reader>,
   until: Date,
   numWeeks: number,
-  weekday: Weekday
+  weekday: Weekday,
 ): Promise<{ weeks: { week: Week; entries: Entry[] }[] }> => {
   const latest = Week.of(until, weekday);
   const earliest = latest.add(-numWeeks);
-  const entries = await client.GetEntries({
-    publishedAfter: Timestamp.fromDate(earliest.startsAt),
-    publishedBefore: Timestamp.fromDate(latest.endsAt),
+  const entries = await client.getEntries({
+    publishedAfter: timestampFromDate(earliest.startsAt),
+    publishedBefore: timestampFromDate(latest.endsAt),
     sortKey: GetEntriesRequest_SortKey.PUBLISHED_AT,
     order: GetEntriesRequest_Order.DESC,
     includeContent: false,
@@ -120,14 +123,14 @@ function* toWeeks(
   latest: Week,
   earliest: Week,
   weekday: Weekday,
-  entries: Entry[]
+  entries: Entry[],
 ) {
   const byWeek = new Map<number, Entry[]>();
 
   for (const entry of entries) {
     const key = Week.of(
-      Timestamp.toDate(entry.publishedAt!),
-      weekday
+      timestampDate(entry.publishedAt!),
+      weekday,
     ).startsAt.getTime();
     const entries = byWeek.get(key) ?? [];
     entries.push(entry);
