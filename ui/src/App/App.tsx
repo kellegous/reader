@@ -12,7 +12,7 @@ export const App = () => {
 
   return (
     <ModelProvider
-      baseUrl="/twirp"
+      baseUrl="/rpc"
       until={new Date()}
       numWeeks={5}
       weekday={Weekday.Monday}
