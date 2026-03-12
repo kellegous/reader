@@ -43,7 +43,7 @@ export class Summarizer {
     try {
       await fetch(`${baseUrl}/api/ps`);
       return new Summarizer(
-        createClient(Reader, createConnectTransport({ baseUrl })),
+        createClient(Reader, createConnectTransport({ baseUrl: "/rpc" })),
         baseUrl,
         model,
       );
