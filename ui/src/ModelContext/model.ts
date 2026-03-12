@@ -1,6 +1,5 @@
 import { timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
-import { Client, createClient } from "@connectrpc/connect";
-import { createConnectTransport } from "@connectrpc/connect-web";
+import { Client } from "@connectrpc/connect";
 import {
   Config,
   Entry,
@@ -51,13 +50,12 @@ export const empty = (client: Client<typeof Reader>): ModelState => {
 };
 
 export const load = async (
-  baseUrl: string,
+  client: Client<typeof Reader>,
   until: Date,
   numWeeks: number,
   weekday: Weekday,
   setState: (fn: (model: ModelState) => ModelState) => void,
 ): Promise<void> => {
-  const client = createClient(Reader, createConnectTransport({ baseUrl }));
   setState((model) => ({ ...model, loading: true }));
 
   const [, config] = await Promise.all([

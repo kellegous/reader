@@ -26,8 +26,8 @@ export const ModelProvider = ({
   );
 
   const refresh = useCallback(async () => {
-    load(baseUrl, until, numWeeks, weekday, setModel);
-  }, [until, numWeeks, weekday, baseUrl]);
+    load(model.client, until, numWeeks, weekday, setModel);
+  }, [until, numWeeks, weekday, model.client]);
 
   useEffect(() => {
     refresh();
