@@ -3,7 +3,7 @@ package config
 import "errors"
 
 const (
-	DefaultWebAddr = ":8080"
+	DefaultWebAddr = ":4040"
 )
 
 type Web struct {

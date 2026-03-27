@@ -8,8 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const defaultOllamaURL = "http://localhost:11434"
-
 type Info struct {
 	Postgres Postgres `yaml:"postgres"`
 	Miniflux Miniflux `yaml:"miniflux"`

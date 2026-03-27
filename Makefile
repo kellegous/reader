@@ -66,7 +66,7 @@ internal/ui/assets/index.html: node_modules/.build $(FE_PROTOS) $(shell find ui 
 	SHA="$(SHA)" BUILD_NAME="$(BUILD_NAME)" npm run build
 
 develop: bin/reader
-	bin/reader server --dev-mode=.:3020
+	bin/reader server --dev-mode=.:4041
 
 clean:
 	rm -rf bin internal/ui/assets

@@ -6,7 +6,7 @@ require (
 	al.essio.dev/pkg/shellescape v1.6.0
 	connectrpc.com/connect v1.19.1
 	github.com/jackc/pgx/v5 v5.9.1
-	github.com/kellegous/glue v0.13.0
+	github.com/kellegous/glue v0.16.0
 	github.com/kellegous/poop v0.8.0
 	github.com/lib/pq v1.12.0
 	github.com/spf13/cobra v1.10.2
@@ -23,6 +23,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/kellegous/buildname v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect

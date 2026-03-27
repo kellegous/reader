@@ -5,15 +5,11 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"os"
-	"os/exec"
 	"os/signal"
-	"strconv"
-	"strings"
 	"time"
 
+	"github.com/kellegous/glue/devmode"
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
 	"github.com/kellegous/reader"
@@ -33,42 +29,42 @@ const (
 	authProxyHeader = "X-Reader-User"
 )
 
-type DevMode struct {
-	Root string
-	Port int
-}
+// type DevMode struct {
+// 	Root string
+// 	Port int
+// }
 
-func (d *DevMode) IsZero() bool {
-	return d.Port == 0
-}
+// func (d *DevMode) IsZero() bool {
+// 	return d.Port == 0
+// }
 
-func (d *DevMode) Set(v string) error {
-	root, ps, ok := strings.Cut(v, ":")
-	if !ok {
-		root = "."
-		ps = v
-	}
-	port, err := strconv.Atoi(ps)
-	if err != nil {
-		return err
-	}
-	d.Port = port
-	d.Root = root
-	return nil
-}
+// func (d *DevMode) Set(v string) error {
+// 	root, ps, ok := strings.Cut(v, ":")
+// 	if !ok {
+// 		root = "."
+// 		ps = v
+// 	}
+// 	port, err := strconv.Atoi(ps)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	d.Port = port
+// 	d.Root = root
+// 	return nil
+// }
 
-func (d *DevMode) String() string {
-	return fmt.Sprintf("%s:%d", d.Root, d.Port)
-}
+// func (d *DevMode) String() string {
+// 	return fmt.Sprintf("%s:%d", d.Root, d.Port)
+// }
 
-func (d *DevMode) Type() string {
-	return "root:port"
-}
+// func (d *DevMode) Type() string {
+// 	return "root:port"
+// }
 
 type serverFlags struct {
 	ConfigFile string
 	Debug      bool
-	DevMode    DevMode
+	DevMode    devmode.Flag
 }
 
 func serverCmd() *cobra.Command {
@@ -202,50 +198,58 @@ func startMiniflux(
 	return s, nil
 }
 
-func getAssets(
-	ctx context.Context,
-	devMode DevMode,
-) (http.Handler, error) {
-	if devMode.IsZero() {
-		a, err := ui.Assets()
-		if err != nil {
-			return nil, err
-		}
-		return http.StripPrefix("/ui/", a), nil
+func getAssets(ctx context.Context, devMode *devmode.Flag) (http.Handler, error) {
+	if !devMode.IsEnabled() {
+		return ui.Assets()
 	}
 
-	c := exec.CommandContext(
-		ctx,
-		"node_modules/.bin/vite",
-		"--clearScreen=false",
-		fmt.Sprintf("--port=%d", devMode.Port))
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-	c.Dir = devMode.Root
-	if err := c.Start(); err != nil {
-		return nil, err
-	}
-
-	proxyURL := url.URL{
-		Scheme: "http",
-		Host:   fmt.Sprintf("localhost:%d", devMode.Port),
-		Path:   "/",
-	}
-
-	p := httputil.NewSingleHostReverseProxy(&proxyURL)
-	dir := p.Director
-	p.Director = func(r *http.Request) {
-		dir(r)
-		r.Host = proxyURL.Host
-	}
-
-	// go func() {
-	// 	time.Sleep(2 * time.Second)
-	// 	emitBanner(os.Stdout, addr.BrowserURL(), &proxyURL)
-	// }()
-
-	return p, nil
+	return devmode.AssetsFromVite(ctx, devMode)
 }
+
+// func getAssets(
+// 	ctx context.Context,
+// 	devMode DevMode,
+// ) (http.Handler, error) {
+// 	if devMode.IsZero() {
+// 		a, err := ui.Assets()
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		return http.StripPrefix("/ui/", a), nil
+// 	}
+
+// 	c := exec.CommandContext(
+// 		ctx,
+// 		"node_modules/.bin/vite",
+// 		"--clearScreen=false",
+// 		fmt.Sprintf("--port=%d", devMode.Port))
+// 	c.Stdout = os.Stdout
+// 	c.Stderr = os.Stderr
+// 	c.Dir = devMode.Root
+// 	if err := c.Start(); err != nil {
+// 		return nil, err
+// 	}
+
+// 	proxyURL := url.URL{
+// 		Scheme: "http",
+// 		Host:   fmt.Sprintf("localhost:%d", devMode.Port),
+// 		Path:   "/",
+// 	}
+
+// 	p := httputil.NewSingleHostReverseProxy(&proxyURL)
+// 	dir := p.Director
+// 	p.Director = func(r *http.Request) {
+// 		dir(r)
+// 		r.Host = proxyURL.Host
+// 	}
+
+// 	// go func() {
+// 	// 	time.Sleep(2 * time.Second)
+// 	// 	emitBanner(os.Stdout, addr.BrowserURL(), &proxyURL)
+// 	// }()
+
+// 	return p, nil
+// }
 
 func runWeb(
 	ctx context.Context,
@@ -259,7 +263,7 @@ func runWeb(
 	}
 	defer l.Close()
 
-	assets, err := getAssets(ctx, flags.DevMode)
+	assets, err := getAssets(ctx, &flags.DevMode)
 	if err != nil {
 		return poop.Chain(err)
 	}
@@ -276,6 +280,19 @@ func runWeb(
 		mfc = mf.Client(client.WithAPIKey(key.Token))
 	} else {
 		mfc = mf.Client()
+	}
+
+	if flags.DevMode.IsEnabled() {
+		go func() {
+			ctx, done := context.WithTimeout(ctx, 10*time.Second)
+			defer done()
+
+			if err := flags.DevMode.WaitForReady(ctx); err != nil {
+				logging.L(ctx).Fatal("unable to wait for dev mode", zap.Error(err))
+			}
+
+			flags.DevMode.PrintBanner(os.Stdout, cfg.Web.Addr)
+		}()
 	}
 
 	return web.Serve(ctx, l, mf, assets, headers, mfc, &reader.Config{

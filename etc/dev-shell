@@ -6,7 +6,7 @@ import sys
 import subprocess
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--port", type=int, default=6020)
+parser.add_argument("--port", type=int, default=4040)
 args = parser.parse_args()
 
 arch = subprocess.run(
@@ -27,12 +27,11 @@ subprocess.run(
         "-v",
         f"{root}:/src",
         "-p",
-        f"{args.port}:8080",
+        f"{args.port}:4040",
         "-w",
         "/src",
         "kellegous/build:751a8adc",
         "/bin/bash",
         "/src/etc/setup-dev.sh",
     ],
-    check=True,
 )
