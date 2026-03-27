@@ -200,56 +200,15 @@ func startMiniflux(
 
 func getAssets(ctx context.Context, devMode *devmode.Flag) (http.Handler, error) {
 	if !devMode.IsEnabled() {
-		return ui.Assets()
+		a, err := ui.Assets()
+		if err != nil {
+			return nil, err
+		}
+		return http.StripPrefix("/ui/", a), nil
 	}
 
 	return devmode.AssetsFromVite(ctx, devMode)
 }
-
-// func getAssets(
-// 	ctx context.Context,
-// 	devMode DevMode,
-// ) (http.Handler, error) {
-// 	if devMode.IsZero() {
-// 		a, err := ui.Assets()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		return http.StripPrefix("/ui/", a), nil
-// 	}
-
-// 	c := exec.CommandContext(
-// 		ctx,
-// 		"node_modules/.bin/vite",
-// 		"--clearScreen=false",
-// 		fmt.Sprintf("--port=%d", devMode.Port))
-// 	c.Stdout = os.Stdout
-// 	c.Stderr = os.Stderr
-// 	c.Dir = devMode.Root
-// 	if err := c.Start(); err != nil {
-// 		return nil, err
-// 	}
-
-// 	proxyURL := url.URL{
-// 		Scheme: "http",
-// 		Host:   fmt.Sprintf("localhost:%d", devMode.Port),
-// 		Path:   "/",
-// 	}
-
-// 	p := httputil.NewSingleHostReverseProxy(&proxyURL)
-// 	dir := p.Director
-// 	p.Director = func(r *http.Request) {
-// 		dir(r)
-// 		r.Host = proxyURL.Host
-// 	}
-
-// 	// go func() {
-// 	// 	time.Sleep(2 * time.Second)
-// 	// 	emitBanner(os.Stdout, addr.BrowserURL(), &proxyURL)
-// 	// }()
-
-// 	return p, nil
-// }
 
 func runWeb(
 	ctx context.Context,
