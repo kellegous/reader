@@ -12,6 +12,8 @@ import {
 import { Week, Weekday } from "../time";
 import { Summarizer } from "./summarizer";
 
+const defaultModel = "gemma4:e4b";
+
 export interface ModelState {
   client: Client<typeof Reader>;
   until: Date;
@@ -114,7 +116,7 @@ const getSummarizer = async (config: Config): Promise<Summarizer | null> => {
     return null;
   }
 
-  return await Summarizer.createIfAvailable(url, model || "gemma3:27b");
+  return await Summarizer.createIfAvailable(url, model || defaultModel);
 };
 
 function* toWeeks(

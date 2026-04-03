@@ -29,38 +29,6 @@ const (
 	authProxyHeader = "X-Reader-User"
 )
 
-// type DevMode struct {
-// 	Root string
-// 	Port int
-// }
-
-// func (d *DevMode) IsZero() bool {
-// 	return d.Port == 0
-// }
-
-// func (d *DevMode) Set(v string) error {
-// 	root, ps, ok := strings.Cut(v, ":")
-// 	if !ok {
-// 		root = "."
-// 		ps = v
-// 	}
-// 	port, err := strconv.Atoi(ps)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	d.Port = port
-// 	d.Root = root
-// 	return nil
-// }
-
-// func (d *DevMode) String() string {
-// 	return fmt.Sprintf("%s:%d", d.Root, d.Port)
-// }
-
-// func (d *DevMode) Type() string {
-// 	return "root:port"
-// }
-
 type serverFlags struct {
 	ConfigFile string
 	Debug      bool
@@ -75,7 +43,6 @@ func serverCmd() *cobra.Command {
 		Short: "Start the reader server",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := runServer(cmd, &flags); err != nil {
-				// logging.L(cmd.Context()).Fatal("unable to start server", zap.Error(err))
 				poop.HitFan(err)
 			}
 		},
