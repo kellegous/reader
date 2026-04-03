@@ -7,6 +7,8 @@ import (
 	"net/http/httputil"
 	"net/url"
 
+	"connectrpc.com/connect"
+	"github.com/kellegous/glue/metrics"
 	"miniflux.app/v2/client"
 
 	"github.com/kellegous/reader"
@@ -38,7 +40,7 @@ func Serve(
 	path, handler := reader_connect.NewReaderHandler(&rpc{
 		client: api,
 		cfg:    cfg,
-	})
+	}, connect.WithInterceptors(metrics.ForRPC()))
 	m.Handle(rpcPrefix+path, http.StripPrefix(rpcPrefix, handler))
 
 	// NOTE(kellegous):
@@ -52,7 +54,7 @@ func Serve(
 	m.Handle("/refresh-session", newSessionRefresher(beURL, headers))
 	m.Handle("/ui/", assets)
 
-	return http.Serve(l, m)
+	return http.Serve(l, metrics.ForHTTP(m))
 }
 
 func newMinifluxProxy(beURL *url.URL, headers map[string]string) http.Handler {
