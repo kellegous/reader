@@ -58,13 +58,14 @@ func Serve(
 }
 
 func newMinifluxProxy(beURL *url.URL, headers map[string]string) http.Handler {
-	p := httputil.NewSingleHostReverseProxy(beURL)
-	dir := p.Director
-	p.Director = func(r *http.Request) {
-		dir(r)
-		for k, v := range headers {
-			r.Header.Add(k, v)
-		}
+	p := &httputil.ReverseProxy{
+		Rewrite: func(pr *httputil.ProxyRequest) {
+			pr.SetURL(beURL)
+			pr.SetXForwarded()
+			for k, v := range headers {
+				pr.Out.Header.Add(k, v)
+			}
+		},
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
