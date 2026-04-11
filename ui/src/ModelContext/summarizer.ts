@@ -1,5 +1,6 @@
 import { Client, createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
+import { withSource } from "../lib/withSource";
 import { Reader } from "../gen/reader_pb";
 
 export type Role = "user" | "assistant" | "system";
@@ -43,7 +44,13 @@ export class Summarizer {
     try {
       await fetch(`${baseUrl}/api/ps`);
       return new Summarizer(
-        createClient(Reader, createConnectTransport({ baseUrl: "/rpc" })),
+        createClient(
+          Reader,
+          createConnectTransport({
+            baseUrl: "/rpc",
+            interceptors: [withSource("reader")],
+          }),
+        ),
         baseUrl,
         model,
       );

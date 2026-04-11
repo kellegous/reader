@@ -4,6 +4,7 @@ import { ModelContext } from "./ModelContext";
 import { empty, load, ModelState } from "./model";
 import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
+import { withSource } from "../lib/withSource";
 import { Reader } from "../gen/reader_pb";
 
 export interface ModelProviderProps {
@@ -22,7 +23,15 @@ export const ModelProvider = ({
   children,
 }: ModelProviderProps) => {
   const [model, setModel] = useState<ModelState>(
-    empty(createClient(Reader, createConnectTransport({ baseUrl }))),
+    empty(
+      createClient(
+        Reader,
+        createConnectTransport({
+          baseUrl,
+          interceptors: [withSource("reader")],
+        }),
+      ),
+    ),
   );
 
   const refresh = useCallback(async () => {
