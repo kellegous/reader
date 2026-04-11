@@ -1,6 +1,6 @@
 import { Client, createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { withSource } from "../lib/withSource";
+import { withSource } from "../withSource";
 import { Reader } from "../gen/reader_pb";
 
 export type Role = "user" | "assistant" | "system";
