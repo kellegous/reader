@@ -8,4 +8,5 @@ MODULE=$(go list -m)
 rm -f go.mod go.sum
 go mod init $MODULE
 go mod tidy
-make clean
+bun update
+make nuke

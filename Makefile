@@ -53,17 +53,17 @@ reader_connect/reader.connect.go: reader.proto bin/protoc-gen-connect-go bin/pro
 ui/src/gen/%_pb.ts: %.proto node_modules/.build bin/protoc
 	mkdir -p $(dir $@)
 	bin/protoc --proto_path=. \
-		--plugin=protoc-gen-es=node_modules/.bin/protoc-gen-es \
+		--plugin=protoc-gen-es=$(CURDIR)/etc/protoc-gen-es \
 		--es_out=ui/src/gen \
 		--es_opt=target=ts \
 		$<
 
 node_modules/.build:
-	npm install
+	bun install
 	touch $@
 
 internal/ui/assets/index.html: node_modules/.build $(FE_PROTOS) $(shell find ui -type f)
-	SHA="$(SHA)" BUILD_NAME="$(BUILD_NAME)" npm run build
+	SHA="$(SHA)" BUILD_NAME="$(BUILD_NAME)" bun run build
 
 develop: bin/reader
 	bin/reader server --dev-mode=.:4041

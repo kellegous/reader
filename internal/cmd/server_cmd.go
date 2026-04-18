@@ -174,7 +174,10 @@ func getAssets(ctx context.Context, devMode *devmode.Flag) (http.Handler, error)
 		return http.StripPrefix("/ui/", a), nil
 	}
 
-	return devmode.AssetsFromVite(ctx, devMode)
+	return devmode.AssetsFromVite(
+		ctx,
+		devMode,
+		devmode.UseBun())
 }
 
 func runWeb(
