@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"net/http"
 	"net/http/cookiejar"
 	"os"
@@ -112,7 +113,7 @@ func ensureAPIKeyFor(
 		&key.CreatedAt,
 	); err == nil {
 		return &key, nil
-	} else if err != sql.ErrNoRows {
+	} else if !errors.Is(err, sql.ErrNoRows) {
 		return nil, poop.Chain(err)
 	}
 
