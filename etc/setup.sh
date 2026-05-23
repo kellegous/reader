@@ -49,6 +49,4 @@ apt install -y postgresql-14 sudo ca-certificates
 
 apt clean
 
-npm install -g bun
-
 install_miniflux ${MINIFLUX_VERSION} ${ARCH}
