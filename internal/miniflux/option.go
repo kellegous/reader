@@ -61,6 +61,7 @@ func (o *Options) env() []string {
 
 	if p := o.authProxy; p != nil {
 		env = append(env, "AUTH_PROXY_HEADER="+p.header)
+		env = append(env, "TRUSTED_REVERSE_PROXY_NETWORKS=0.0.0.0/0")
 		if p.userCreation {
 			env = append(env, "AUTH_PROXY_USER_CREATION=1")
 		}

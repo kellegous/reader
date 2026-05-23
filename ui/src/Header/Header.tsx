@@ -4,35 +4,35 @@ export const Header = () => {
   return (
     <div className={styles.root}>
       <div className={styles.item}>
-        <a href="/unread/">
+        <a href="/unread">
           <div className={`${styles.icon} ${styles.unread}`}></div>
           <div className={styles.title}>unread</div>
         </a>
       </div>
 
       <div className={styles.item}>
-        <a href="/feeds/">
+        <a href="/feeds">
           <div className={`${styles.icon} ${styles.feeds}`}></div>
           <div className={styles.title}>feeds</div>
         </a>
       </div>
 
       <div className={styles.item}>
-        <a href="/starred/">
+        <a href="/starred">
           <div className={`${styles.icon} ${styles.starred}`}></div>
           <div className={styles.title}>starred</div>
         </a>
       </div>
 
       <div className={styles.item}>
-        <a href="/search/">
+        <a href="/search">
           <div className={`${styles.icon} ${styles.search}`}></div>
           <div className={styles.title}>search</div>
         </a>
       </div>
 
       <div className={styles.item}>
-        <a href="/settings/">
+        <a href="/settings">
           <div className={`${styles.icon} ${styles.settings}`}></div>
           <div className={styles.title}>settings</div>
         </a>

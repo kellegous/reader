@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-MINIFLUX_VERSION=2.2.13
+MINIFLUX_VERSION=2.3.0
 
 install_miniflux() {
 	local VERSION=$1
@@ -20,6 +20,8 @@ apt update
 apt install -y postgresql sudo
 
 apt clean
+
+npm install -g bun
 
 install_miniflux ${MINIFLUX_VERSION} $(go env GOARCH)
 
