@@ -67,6 +67,14 @@ make
 bin/reader --config-file=reader.yaml
 ```
 
+## Updating Miniflux
+
+To bump the bundled Miniflux version (setup scripts and `go.mod`):
+
+```bash
+./etc/update-miniflux 2.3.2
+```
+
 ## Author(s)
 
 - [Kelly Norton](https://github.com/kellegous)

@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import re
+import subprocess
+
+VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def parse_version(value):
+    if not VERSION_RE.match(value):
+        raise argparse.ArgumentTypeError(
+            "VERSION must be of the form X.Y.Z (e.g. 2.3.2)"
+        )
+    return value
+
+
+def read_miniflux_version(path):
+    with open(path) as f:
+        for line in f:
+            if line.startswith("MINIFLUX_VERSION="):
+                return line.strip().split("=", 1)[1]
+    raise SystemExit(f"MINIFLUX_VERSION not found in {path}")
+
+
+def read_gomod_version(path):
+    with open(path) as f:
+        for line in f:
+            if "miniflux.app/v2" in line:
+                return line.split()[1].removeprefix("v")
+    raise SystemExit(f"miniflux.app/v2 not found in {path}")
+
+
+def update_miniflux_version(path, version):
+    with open(path) as f:
+        lines = f.readlines()
+    with open(path, "w") as f:
+        for line in lines:
+            if line.startswith("MINIFLUX_VERSION="):
+                f.write(f"MINIFLUX_VERSION={version}\n")
+            else:
+                f.write(line)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Update miniflux version in setup scripts and go.mod"
+    )
+    parser.add_argument(
+        "version",
+        type=parse_version,
+        help="miniflux version (e.g. 2.3.2)",
+    )
+    args = parser.parse_args()
+
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.dirname(here)
+    setup = os.path.join(here, "setup.sh")
+    setup_dev = os.path.join(here, "setup-dev.sh")
+    gomod = os.path.join(root, "go.mod")
+
+    old_setup = read_miniflux_version(setup)
+    old_setup_dev = read_miniflux_version(setup_dev)
+    old_gomod = read_gomod_version(gomod)
+
+    update_miniflux_version(setup, args.version)
+    update_miniflux_version(setup_dev, args.version)
+
+    subprocess.run(
+        ["go", "get", "-u", f"miniflux.app/v2@v{args.version}"],
+        cwd=root,
+        check=True,
+    )
+
+    new_gomod = read_gomod_version(gomod)
+
+    print(f"{'etc/setup.sh:':<22} {old_setup} -> {args.version}")
+    print(f"{'etc/setup-dev.sh:':<22} {old_setup_dev} -> {args.version}")
+    print(f"{'go.mod:':<22} {old_gomod} -> {new_gomod}")
+
+
+if __name__ == "__main__":
+    main()
