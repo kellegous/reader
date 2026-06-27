@@ -3,6 +3,7 @@
 import argparse
 import os
 import re
+import stat
 import subprocess
 
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
@@ -33,6 +34,7 @@ def read_gomod_version(path):
 
 
 def update_miniflux_version(path, version):
+    mode = os.stat(path).st_mode
     with open(path) as f:
         lines = f.readlines()
     with open(path, "w") as f:
@@ -41,6 +43,7 @@ def update_miniflux_version(path, version):
                 f.write(f"MINIFLUX_VERSION={version}\n")
             else:
                 f.write(line)
+    os.chmod(path, stat.S_IMODE(mode))
 
 
 def main():
