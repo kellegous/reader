@@ -3,7 +3,7 @@ module github.com/kellegous/reader
 go 1.27.0
 
 require (
-	al.essio.dev/pkg/shellescape v1.6.0
+	al.essio.dev/pkg/shellescape v1.6.1
 	connectrpc.com/connect v1.20.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/kellegous/glue v0.31.0
