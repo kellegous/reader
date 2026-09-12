@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/kellegous/glue/devmode"
@@ -60,7 +61,7 @@ func runServer(cmd *cobra.Command, flags *serverFlags) error {
 		return poop.Chain(err)
 	}
 
-	ctx, done := signal.NotifyContext(cmd.Context(), os.Interrupt)
+	ctx, done := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
 	defer done()
 
 	lg := logging.L(cmd.Context())

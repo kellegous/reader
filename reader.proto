@@ -36,7 +36,10 @@ message GetEntriesRequest {
   bool include_content = 5;
 }
 
-message GetEntriesResponse { repeated Entry entries = 1; }
+message GetEntriesResponse {
+  repeated Entry entries = 1;
+  repeated Feed feeds = 2;
+}
 
 message GetMeResponse { User user = 1; }
 
@@ -75,7 +78,8 @@ message Entry {
   google.protobuf.Timestamp published_at = 2;
   google.protobuf.Timestamp changed_at = 3;
   google.protobuf.Timestamp created_at = 4;
-  Feed feed = 5;
+  Feed feed = 5; // deprecated - the feeds are moving into the response
+  int64 feed_id = 11;
   string url = 6;
   string title = 7;
   string content = 8;

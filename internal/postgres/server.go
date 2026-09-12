@@ -104,7 +104,7 @@ func (s *Server) Stop(ctx context.Context) error {
 		ctx,
 		pgUser,
 		filepath.Join(s.pgBinDir, "pg_ctl"),
-		"-D", s.dataDir,
+		"-D", s.pgDataDir(),
 		"stop").Run()
 }
 

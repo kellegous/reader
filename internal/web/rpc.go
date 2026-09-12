@@ -73,12 +73,14 @@ func (r *rpc) GetEntries(
 		entries = append(entries, e)
 	}
 
-	if err := fs.resolveIcons(ctx); err != nil {
+	feeds, err := fs.toFeeds(ctx)
+	if err != nil {
 		return nil, newBackendError(ctx, err)
 	}
 
 	return connect.NewResponse(&reader.GetEntriesResponse{
 		Entries: entries,
+		Feeds:   feeds,
 	}), nil
 }
 
@@ -184,6 +186,7 @@ func toEntry(
 		ChangedAt:   timestamppb.New(entry.ChangedAt),
 		CreatedAt:   timestamppb.New(entry.CreatedAt),
 		Feed:        toFeed(entry.Feed),
+		FeedId:      entry.FeedID,
 		Url:         entry.URL,
 		Title:       entry.Title,
 		Content:     content,
