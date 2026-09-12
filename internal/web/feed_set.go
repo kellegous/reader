@@ -24,16 +24,14 @@ func newFeedSet(client *client.Client) *feedSet {
 	}
 }
 
-func (s feedSet) toFeed(feed *client.Feed) *reader.Feed {
-	if f, ok := s.feeds[feed.ID]; ok {
-		return f
+func (s feedSet) add(feed *client.Feed) {
+	if _, ok := s.feeds[feed.ID]; ok {
+		return
 	}
-	f := toFeed(feed)
-	s.feeds[feed.ID] = f
-	return f
+	s.feeds[feed.ID] = toFeed(feed)
 }
 
-func (s feedSet) toFeeds(ctx context.Context) ([]*reader.Feed, error) {
+func (s feedSet) resolveFeeds(ctx context.Context) ([]*reader.Feed, error) {
 	if err := s.resolveIcons(ctx); err != nil {
 		return nil, err
 	}
@@ -47,6 +45,8 @@ func (s feedSet) toFeeds(ctx context.Context) ([]*reader.Feed, error) {
 	return feeds, nil
 }
 
+// TODO(kellegous): It would probably be better to just expose an image endpoint
+// and allow the browser to do its fanout magic to get them.
 func (s feedSet) resolveIcons(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 	for _, feed := range s.feeds {

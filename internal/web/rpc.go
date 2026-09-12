@@ -66,14 +66,16 @@ func (r *rpc) GetEntries(
 
 	entries := make([]*reader.Entry, 0, len(res.Entries))
 	for _, entry := range res.Entries {
-		e, err := toEntry(entry, fs.toFeed, msg.GetIncludeContent())
+		fs.add(entry.Feed)
+
+		e, err := toEntry(entry, msg.GetIncludeContent())
 		if err != nil {
 			return nil, newBackendError(ctx, err)
 		}
 		entries = append(entries, e)
 	}
 
-	feeds, err := fs.toFeeds(ctx)
+	feeds, err := fs.resolveFeeds(ctx)
 	if err != nil {
 		return nil, newBackendError(ctx, err)
 	}
@@ -167,7 +169,6 @@ func toStatus(status string) (reader.Status, error) {
 
 func toEntry(
 	entry *client.Entry,
-	toFeed func(*client.Feed) *reader.Feed,
 	includeContent bool,
 ) (*reader.Entry, error) {
 	var content string
@@ -185,7 +186,6 @@ func toEntry(
 		PublishedAt: timestamppb.New(entry.Date),
 		ChangedAt:   timestamppb.New(entry.ChangedAt),
 		CreatedAt:   timestamppb.New(entry.CreatedAt),
-		Feed:        toFeed(entry.Feed),
 		FeedId:      entry.FeedID,
 		Url:         entry.URL,
 		Title:       entry.Title,

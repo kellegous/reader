@@ -3,6 +3,7 @@ import { Client } from "@connectrpc/connect";
 import {
   Config,
   Entry,
+  Feed,
   GetEntriesRequest_Order,
   GetEntriesRequest_SortKey,
   Reader,
@@ -95,15 +96,30 @@ const getWeeks = async (
 ): Promise<{ weeks: { week: Week; entries: Entry[] }[] }> => {
   const latest = Week.of(until, weekday);
   const earliest = latest.add(-numWeeks);
-  const entries = await client.getEntries({
+  const { entries, feeds } = await client.getEntries({
     publishedAfter: timestampFromDate(earliest.startsAt),
     publishedBefore: timestampFromDate(latest.endsAt),
     sortKey: GetEntriesRequest_SortKey.PUBLISHED_AT,
     order: GetEntriesRequest_Order.DESC,
     includeContent: false,
   });
+
+  // TODO(kellegous): I would like to remove the feed property from Entry in
+  // the proto. In order to do that, I need to introduce an Entry type separate
+  // from the proto that replaces feedId with the resolved feed. The downstream
+  // code would also benefit from this because we could remove a lot of the
+  // optionals from the type.
+  const feedMap = new Map<bigint, Feed>();
+  for (const feed of feeds) {
+    feedMap.set(feed.id, feed);
+  }
+
+  for (const entry of entries) {
+    entry.feed = feedMap.get(entry.feedId);
+  }
+
   return {
-    weeks: Array.from(toWeeks(latest, earliest, weekday, entries.entries)),
+    weeks: Array.from(toWeeks(latest, earliest, weekday, entries)),
   };
 };
 
