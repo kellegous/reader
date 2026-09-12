@@ -1,15 +1,15 @@
-import * as proto from "../gen/reader_pb";
-import { Entry } from "./Entry";
 import { useState } from "react";
 import styles from "./Feed.module.scss";
 import { FeedIcon } from "./FeedIcon";
 import { ExpandCircleDownOutlined } from "@mui/icons-material";
+import * as model from "../ModelContext";
+import { Entry } from "./Entry";
 
 const DEFAULT_LIMIT = 5;
 
 export interface FeedProps {
-  feed: proto.Feed;
-  entries: proto.Entry[];
+  feed: model.Feed;
+  entries: model.Entry[];
   limit?: number;
 }
 

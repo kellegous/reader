@@ -2,10 +2,10 @@ import { timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { Client } from "@connectrpc/connect";
 import {
   Config,
-  Entry,
   Feed,
   GetEntriesRequest_Order,
   GetEntriesRequest_SortKey,
+  Entry as ProtoEntry,
   Reader,
   Status,
   User,
@@ -27,6 +27,19 @@ export interface ModelState {
   loading: boolean;
   refresh: () => Promise<void>;
   updateEntryStatus: (entryId: bigint, status: Status) => Promise<void>;
+}
+
+export interface Entry {
+  id: bigint;
+  publishedAt: Date;
+  changedAt: Date;
+  createdAt: Date;
+  feed: Feed;
+  url: string;
+  title: string;
+  content: string;
+  readingTime: number;
+  status: Status;
 }
 
 export const empty = (client: Client<typeof Reader>): ModelState => {
@@ -104,22 +117,17 @@ const getWeeks = async (
     includeContent: false,
   });
 
-  // TODO(kellegous): I would like to remove the feed property from Entry in
-  // the proto. In order to do that, I need to introduce an Entry type separate
-  // from the proto that replaces feedId with the resolved feed. The downstream
-  // code would also benefit from this because we could remove a lot of the
-  // optionals from the type.
-  const feedMap = new Map<bigint, Feed>();
-  for (const feed of feeds) {
-    feedMap.set(feed.id, feed);
-  }
-
-  for (const entry of entries) {
-    entry.feed = feedMap.get(entry.feedId);
-  }
+  const feedById = new Map(feeds.map((f) => [f.id, f]));
 
   return {
-    weeks: Array.from(toWeeks(latest, earliest, weekday, entries)),
+    weeks: Array.from(
+      toWeeks(
+        latest,
+        earliest,
+        weekday,
+        entries.map((e) => toEntry(e, feedById)),
+      ),
+    ),
   };
 };
 
@@ -135,6 +143,40 @@ const getSummarizer = async (config: Config): Promise<Summarizer | null> => {
   return await Summarizer.createIfAvailable(url, model || defaultModel);
 };
 
+const toEntry = (
+  {
+    id,
+    publishedAt,
+    changedAt,
+    createdAt,
+    feedId,
+    url,
+    title,
+    content,
+    readingTime,
+    status,
+  }: ProtoEntry,
+  feedById: Map<bigint, Feed>,
+): Entry => {
+  const feed = feedById.get(feedId);
+  if (!feed) {
+    throw new Error(`Feed not found for entry ${id}`);
+  }
+
+  return {
+    id,
+    publishedAt: timestampDate(publishedAt!),
+    changedAt: timestampDate(changedAt!),
+    createdAt: timestampDate(createdAt!),
+    feed,
+    url: url,
+    title: title,
+    content: content,
+    readingTime: readingTime,
+    status: status,
+  };
+};
+
 function* toWeeks(
   latest: Week,
   earliest: Week,
@@ -144,10 +186,7 @@ function* toWeeks(
   const byWeek = new Map<number, Entry[]>();
 
   for (const entry of entries) {
-    const key = Week.of(
-      timestampDate(entry.publishedAt!),
-      weekday,
-    ).startsAt.getTime();
+    const key = Week.of(entry.publishedAt, weekday).startsAt.getTime();
     const entries = byWeek.get(key) ?? [];
     entries.push(entry);
     byWeek.set(key, entries);

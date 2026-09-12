@@ -2,6 +2,7 @@ import * as time from "../time";
 import * as proto from "../gen/reader_pb";
 import { Feed } from "./Feed";
 import styles from "./Week.module.scss";
+import { Entry } from "../ModelContext";
 
 const dayFormat = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -13,7 +14,7 @@ const formatWeek = (week: time.Week) =>
 
 export interface WeekProps {
   week: time.Week;
-  feeds: { feed: proto.Feed; entries: proto.Entry[] }[];
+  feeds: { feed: proto.Feed; entries: Entry[] }[];
 }
 
 export const Week = ({ week, feeds }: WeekProps) => {

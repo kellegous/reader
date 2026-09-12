@@ -78,13 +78,14 @@ message Entry {
   google.protobuf.Timestamp published_at = 2;
   google.protobuf.Timestamp changed_at = 3;
   google.protobuf.Timestamp created_at = 4;
-  Feed feed = 5; // deprecated - the feeds are moving into the response
   int64 feed_id = 11;
   string url = 6;
   string title = 7;
   string content = 8;
   int32 reading_time = 9;
   Status status = 10;
+
+  reserved 5;
 }
 
 message Feed {

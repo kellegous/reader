@@ -1,8 +1,8 @@
 import styles from "./Weeks.module.scss";
-import { Entry, Feed } from "../gen/reader_pb";
+import { Feed } from "../gen/reader_pb";
 import { useMemo } from "react";
 import { Week } from "./Week";
-import { useModel } from "../ModelContext";
+import { Entry, useModel } from "../ModelContext";
 
 export const Weeks = () => {
   // const { weeks } = useReaderData();

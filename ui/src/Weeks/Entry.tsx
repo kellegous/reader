@@ -1,14 +1,14 @@
 import * as proto from "../gen/reader_pb";
 import { formatElapsedTime } from "../elapsed-time";
-import { timestampDate } from "@bufbuild/protobuf/wkt";
 import styles from "./Entry.module.scss";
 import { useCallback, useState } from "react";
 import { useModel, useSummary } from "../ModelContext";
+import * as model from "../ModelContext";
 
 import "highlight.js/styles/github-dark-dimmed.css";
 
 export interface EntryProps {
-  entry: proto.Entry;
+  entry: model.Entry;
 }
 
 export const Entry = ({ entry }: EntryProps) => {
@@ -65,7 +65,7 @@ export const Entry = ({ entry }: EntryProps) => {
         </a>
       </div>
       <div className={styles.info}>
-        <div>{formatElapsedTime(timestampDate(entry.publishedAt!))}</div>
+        <div>{formatElapsedTime(entry.publishedAt)}</div>
         <div>{`${entry.readingTime} min`}</div>
         <div>
           <a href="#" onClick={toggleStatus}>
