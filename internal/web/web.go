@@ -2,16 +2,20 @@ package web
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
+	"strings"
 
 	"connectrpc.com/connect"
 	"github.com/kellegous/glue/metrics"
 	"miniflux.app/v2/client"
 
 	"github.com/kellegous/reader"
+	"github.com/kellegous/reader/internal/datauri"
 	"github.com/kellegous/reader/internal/miniflux"
 	"github.com/kellegous/reader/reader_connect"
 )
@@ -53,8 +57,46 @@ func Serve(
 	// headers that are needed to refresh authentication.
 	m.Handle("/refresh-session", newSessionRefresher(beURL, headers))
 	m.Handle("/ui/", assets)
+	m.Handle("/ui/icon/", http.StripPrefix("/ui/icon", newFeedIconProxy(api)))
 
 	return http.Serve(l, metrics.ForHTTP(m))
+}
+
+func newFeedIconProxy(c *client.Client) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := strings.Trim(r.URL.Path, "/")
+		feedID, err := strconv.ParseInt(path, 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		icon, err := c.FeedIconContext(r.Context(), feedID)
+		if err != nil {
+			if errors.Is(err, client.ErrNotFound) {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			} else if errors.Is(err, client.ErrForbidden) || errors.Is(err, client.ErrNotAuthorized) {
+				http.Error(w, err.Error(), http.StatusForbidden)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// TODO(kellegous): If there is no icon, return a placeholder icon.
+		uri, err := datauri.Parse(icon.Data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", uri.MediaType)
+		if _, err := w.Write(uri.Data); err != nil {
+			// TODO(kellegous): log this
+			return
+		}
+	})
 }
 
 func newMinifluxProxy(beURL *url.URL, headers map[string]string) http.Handler {
