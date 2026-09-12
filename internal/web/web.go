@@ -10,8 +10,11 @@ import (
 	"strconv"
 	"strings"
 
+	_ "embed"
+
 	"connectrpc.com/connect"
 	"github.com/kellegous/glue/metrics"
+	"go.uber.org/zap"
 	"miniflux.app/v2/client"
 
 	"github.com/kellegous/reader"
@@ -21,6 +24,9 @@ import (
 )
 
 const rpcPrefix = "/rpc"
+
+//go:embed tx.png
+var emptyIcon []byte
 
 // TODO(kellegous): consolidate these args into a single options
 // struct.
@@ -72,19 +78,21 @@ func newFeedIconProxy(c *client.Client) http.Handler {
 		}
 
 		icon, err := c.FeedIconContext(r.Context(), feedID)
-		if err != nil {
-			if errors.Is(err, client.ErrNotFound) {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			} else if errors.Is(err, client.ErrForbidden) || errors.Is(err, client.ErrNotAuthorized) {
-				http.Error(w, err.Error(), http.StatusForbidden)
+		if errors.Is(err, client.ErrNotFound) {
+			w.Header().Set("Content-Type", "image/png")
+			if _, err := w.Write(emptyIcon); err != nil {
+				zap.L().Error("failed to write empty icon", zap.Error(err))
 				return
 			}
+			return
+		} else if errors.Is(err, client.ErrForbidden) || errors.Is(err, client.ErrNotAuthorized) {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		} else if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// TODO(kellegous): If there is no icon, return a placeholder icon.
 		uri, err := datauri.Parse(icon.Data)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -93,7 +101,7 @@ func newFeedIconProxy(c *client.Client) http.Handler {
 
 		w.Header().Set("Content-Type", uri.MediaType)
 		if _, err := w.Write(uri.Data); err != nil {
-			// TODO(kellegous): log this
+			zap.L().Error("failed to write icon", zap.Error(err))
 			return
 		}
 	})
