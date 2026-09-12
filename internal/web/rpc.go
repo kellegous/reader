@@ -62,22 +62,21 @@ func (r *rpc) GetEntries(
 		return nil, newBackendError(ctx, err)
 	}
 
-	fs := newFeedSet(r.client)
+	seenFeeds := make(map[int64]bool)
+	var feeds []*reader.Feed
 
 	entries := make([]*reader.Entry, 0, len(res.Entries))
 	for _, entry := range res.Entries {
-		fs.add(entry.Feed)
+		if !seenFeeds[entry.FeedID] {
+			feeds = append(feeds, toFeed(entry.Feed))
+			seenFeeds[entry.FeedID] = true
+		}
 
 		e, err := toEntry(entry, msg.GetIncludeContent())
 		if err != nil {
 			return nil, newBackendError(ctx, err)
 		}
 		entries = append(entries, e)
-	}
-
-	feeds, err := fs.resolveFeeds(ctx)
-	if err != nil {
-		return nil, newBackendError(ctx, err)
 	}
 
 	return connect.NewResponse(&reader.GetEntriesResponse{
@@ -152,10 +151,11 @@ func toUser(user *client.User) *reader.User {
 
 func toFeed(feed *client.Feed) *reader.Feed {
 	return &reader.Feed{
-		Id:      feed.ID,
-		FeedUrl: feed.FeedURL,
-		SiteUrl: feed.SiteURL,
-		Title:   feed.Title,
+		Id:          feed.ID,
+		IconDataUrl: fmt.Sprintf("/ui/icon/%d", feed.ID),
+		FeedUrl:     feed.FeedURL,
+		SiteUrl:     feed.SiteURL,
+		Title:       feed.Title,
 	}
 }
 
