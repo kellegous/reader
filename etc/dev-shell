@@ -7,6 +7,7 @@ import subprocess
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--port", type=int, default=4040)
+parser.add_argument("--volume", type=str, default="reader-data")
 args = parser.parse_args()
 
 arch = subprocess.run(
@@ -26,11 +27,13 @@ subprocess.run(
         f"linux/{arch}",
         "-v",
         f"{root}:/src",
+        "-v",
+        f"{args.volume}:/data",
         "-p",
         f"{args.port}:4040",
         "-w",
         "/src",
-        "kellegous/build:751a8adc",
+        "kellegous/build:a4dd431e",
         "/bin/bash",
         "/src/etc/setup-dev.sh",
     ],

@@ -74,10 +74,9 @@ func (s *Server) EnsureDatabase(
 ) error {
 	// TODO(knorton): limit name, username, password to valid characters
 	q := fmt.Sprintf(`
-		CREATE DATABASE %s;
 		CREATE USER %s WITH ENCRYPTED PASSWORD '%s';
-		GRANT ALL PRIVILEGES ON DATABASE %s TO %s;`,
-		name, username, password, name, username)
+		CREATE DATABASE %s OWNER %s;`,
+		username, password, name, username)
 	if err := s.psql(ctx, pgUser, q); err != nil {
 		return err
 	}
