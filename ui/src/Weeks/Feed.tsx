@@ -25,7 +25,7 @@ export const Feed = ({ feed, entries, limit = DEFAULT_LIMIT }: FeedProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.title}>
-        <FeedIcon url={feed.iconDataUrl} title={feed.title} />
+        <FeedIcon url={feed.iconUrl} title={feed.title} />
         <a href={feed.siteUrl} target="_blank" rel="noopener noreferrer">
           {feed.title}
         </a>

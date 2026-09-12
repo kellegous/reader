@@ -151,11 +151,11 @@ func toUser(user *client.User) *reader.User {
 
 func toFeed(feed *client.Feed) *reader.Feed {
 	return &reader.Feed{
-		Id:          feed.ID,
-		IconDataUrl: fmt.Sprintf("/ui/icon/%d", feed.ID),
-		FeedUrl:     feed.FeedURL,
-		SiteUrl:     feed.SiteURL,
-		Title:       feed.Title,
+		Id:      feed.ID,
+		IconUrl: fmt.Sprintf("/ui/icon/%d", feed.ID),
+		FeedUrl: feed.FeedURL,
+		SiteUrl: feed.SiteURL,
+		Title:   feed.Title,
 	}
 }
 

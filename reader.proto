@@ -92,7 +92,5 @@ message Feed {
   string feed_url = 2;
   string site_url = 3;
   string title = 4;
-  // TODO(kellegous): Rename this field to icon_url because it's no longer a
-  // data URL.
-  string icon_data_url = 5;
+  string icon_url = 5;
 }
