@@ -1,18 +1,17 @@
 module github.com/kellegous/reader
 
-go 1.27.0
+go 1.27.1
 
 require (
 	al.essio.dev/pkg/shellescape v1.6.1
-	connectrpc.com/connect v1.20.0
-	github.com/jackc/pgx/v5 v5.10.0
-	github.com/kellegous/glue v0.31.0
+	connectrpc.com/connect v1.21.0
+	github.com/jackc/pgx/v5 v5.11.0
+	github.com/kellegous/glue v0.31.1-0.20260912125846-6066891ed88a
 	github.com/kellegous/poop v0.8.0
 	github.com/lib/pq v1.12.3
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.28.0
-	golang.org/x/net v0.58.0
-	golang.org/x/sync v0.22.0
+	golang.org/x/net v0.59.0
 	google.golang.org/protobuf v1.36.12
 	gopkg.in/yaml.v3 v3.0.1
 	miniflux.app/v2 v2.3.3
@@ -28,7 +27,7 @@ require (
 	github.com/kellegous/buildname v0.2.0 // indirect
 	github.com/kellegous/tdfiglet v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_golang v1.24.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
@@ -37,6 +36,6 @@ require (
 	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 )

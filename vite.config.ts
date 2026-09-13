@@ -11,5 +11,6 @@ export default defineConfig({
     outDir: "../internal/ui/assets",
     assetsDir: ".",
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
   },
 });
