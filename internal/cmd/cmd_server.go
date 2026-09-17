@@ -15,6 +15,7 @@ import (
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"miniflux.app/v2/client"
 
@@ -36,10 +37,45 @@ type serverFlags struct {
 	ConfigFile string
 	Debug      bool
 	DevMode    devmode.Flag
+	Logging    loggingFlags
+}
+
+func (f *serverFlags) Register(fs *pflag.FlagSet) {
+	fs.StringVar(
+		&f.ConfigFile,
+		"config-file",
+		"reader.yaml",
+		"Path to the config file")
+	fs.BoolVar(
+		&f.Debug,
+		"debug",
+		false,
+		"Enable debug logging")
+	fs.Var(
+		&f.DevMode,
+		"dev-mode",
+		"Enable dev mode (HMR loading in ui)")
+	fs.Var(
+		&f.Logging.Level,
+		"logging.level",
+		"logging: the level to log at")
+	fs.Var(
+		&f.Logging.Outputs,
+		"logging.output",
+		"add the following output to the logging pipeline")
+}
+
+type loggingFlags struct {
+	Level   logging.LevelFlag
+	Outputs logging.OutputPathsFlag
 }
 
 func serverCmd() *cobra.Command {
-	var flags serverFlags
+	flags := serverFlags{
+		Logging: loggingFlags{
+			Outputs: logging.NewOutputPathsFlag("stderr"),
+		},
+	}
 
 	cmd := &cobra.Command{
 		Use:   "server",
@@ -51,13 +87,18 @@ func serverCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&flags.ConfigFile, "config-file", "reader.yaml", "Path to the config file")
-	cmd.Flags().BoolVar(&flags.Debug, "debug", false, "Enable debug logging")
-	cmd.Flags().Var(&flags.DevMode, "dev-mode", "Enable dev mode (HMR loading in ui)")
+	flags.Register(cmd.Flags())
+
 	return cmd
 }
 
 func runServer(cmd *cobra.Command, flags *serverFlags) (err error) {
+	lg := logging.MustSetup(
+		logging.WithLevel(flags.Logging.Level.Level()),
+		logging.WithOutputPaths(flags.Logging.Outputs.Paths()...),
+	)
+	defer fn.WithAbandon(lg.Sync)
+
 	var cfg config.Info
 	if err := cfg.ReadFile(flags.ConfigFile); err != nil {
 		return poop.Chain(err)
@@ -65,8 +106,6 @@ func runServer(cmd *cobra.Command, flags *serverFlags) (err error) {
 
 	ctx, done := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
 	defer done()
-
-	lg := logging.L(cmd.Context())
 
 	lg.Info("starting reader",
 		zap.String("postgress.data-dir", cfg.Postgres.DataDir))

@@ -6,7 +6,7 @@ require (
 	al.essio.dev/pkg/shellescape v1.6.1
 	connectrpc.com/connect v1.21.0
 	github.com/jackc/pgx/v5 v5.11.0
-	github.com/kellegous/glue v0.31.1-0.20260912125846-6066891ed88a
+	github.com/kellegous/glue v0.31.1-0.20260916215339-15f9a4f253a6
 	github.com/kellegous/poop v0.8.0
 	github.com/lib/pq v1.12.3
 	github.com/spf13/cobra v1.10.2
@@ -18,6 +18,7 @@ require (
 )
 
 require (
+	github.com/avast/retry-go/v4 v4.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
