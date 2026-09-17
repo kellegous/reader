@@ -1,6 +1,8 @@
 PROTOC_GEN_GO_VERSION := v1.36.10
 PROTOC_GEN_CONNECT_GO_VERSION := v1.19.1
 PROTOC_VERSION := 34.1
+GOLANGCI_LINT_VERSION := v2.13.1
+GOIMPORTS_VERSION := v0.49.0
 
 SHA = $(shell go run github.com/kellegous/glue/build/info@latest --format="{{.SHA}}")
 BUILD_NAME = $(shell go run github.com/kellegous/glue/build/info@latest --format="{{.Name}}")
@@ -22,6 +24,26 @@ FE_PROTOS := \
 .PRECIOUS: $(BE_PROTOS)
 
 ALL: bin/reader
+
+develop: bin/reader
+	bin/reader server --dev-mode=.:4041
+
+test:
+	go test ./...
+
+lint: bin/golangci-lint
+	bin/golangci-lint run
+
+fmt: bin/goimports
+	find . -path './node_modules' -prune -o -type f -name '*.go' -exec bin/goimports -local $(GO_MOD) -w {} +
+
+validate: test lint fmt
+
+clean:
+	rm -rf bin internal/ui/assets
+
+nuke: clean
+	rm -rf node_modules
 
 bin/%: cmd/%/main.go $(BE_PROTOS) $(ASSETS) $(shell find internal -name '*.go')
 	go build -o $@ ./cmd/$*
@@ -65,11 +87,9 @@ node_modules/.build:
 internal/ui/assets/index.html: node_modules/.build $(FE_PROTOS) $(shell find ui -type f)
 	SHA="$(SHA)" BUILD_NAME="$(BUILD_NAME)" bun run build
 
-develop: bin/reader
-	bin/reader server --dev-mode=.:4041
 
-clean:
-	rm -rf bin internal/ui/assets
+bin/golangci-lint:
+	GOBIN="$(CURDIR)/bin" go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
-nuke: clean
-	rm -rf node_modules
+bin/goimports:
+	GOBIN="$(CURDIR)/bin" go install golang.org/x/tools/cmd/goimports@$(GOIMPORTS_VERSION)

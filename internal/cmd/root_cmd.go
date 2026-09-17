@@ -17,7 +17,7 @@ func rootCmd() *cobra.Command {
 			lg = logging.MustSetup()
 		},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
-			lg.Sync()
+			_ = lg.Sync()
 		},
 	}
 

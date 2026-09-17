@@ -11,12 +11,14 @@ import (
 	"time"
 
 	"github.com/kellegous/glue/devmode"
+	"github.com/kellegous/glue/fn"
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
-	"github.com/kellegous/reader"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"miniflux.app/v2/client"
+
+	"github.com/kellegous/reader"
 
 	"github.com/kellegous/reader/internal/config"
 	"github.com/kellegous/reader/internal/miniflux"
@@ -55,7 +57,7 @@ func serverCmd() *cobra.Command {
 	return cmd
 }
 
-func runServer(cmd *cobra.Command, flags *serverFlags) error {
+func runServer(cmd *cobra.Command, flags *serverFlags) (err error) {
 	var cfg config.Info
 	if err := cfg.ReadFile(flags.ConfigFile); err != nil {
 		return poop.Chain(err)
@@ -73,7 +75,9 @@ func runServer(cmd *cobra.Command, flags *serverFlags) error {
 	if err != nil {
 		return poop.Chain(err)
 	}
-	defer pg.Stop(context.Background())
+	defer func() {
+		_ = pg.Stop(context.Background())
+	}()
 
 	// TODO(knorton): get pid from postgres
 	lg.Info("postgres started", zap.Int("pid", 0))
@@ -86,7 +90,7 @@ func runServer(cmd *cobra.Command, flags *serverFlags) error {
 	if err != nil {
 		return poop.Chain(err)
 	}
-	defer mf.Stop()
+	defer fn.WithAbandon(mf.Stop)
 
 	ch := make(chan error, 1)
 
@@ -120,7 +124,7 @@ func ensurePostgresReady(
 		cfg.Username,
 		cfg.Password,
 	); err != nil {
-		s.Stop(ctx)
+		_ = s.Stop(ctx)
 		return nil, err
 	}
 
@@ -186,12 +190,12 @@ func runWeb(
 	flags *serverFlags,
 	cfg *config.Info,
 	mf *miniflux.Server,
-) error {
+) (err error) {
 	l, err := net.Listen("tcp", cfg.Web.Addr)
 	if err != nil {
 		return poop.Chain(err)
 	}
-	defer l.Close()
+	defer fn.WithCare(l.Close, &err)
 
 	assets, err := getAssets(ctx, &flags.DevMode)
 	if err != nil {
@@ -221,7 +225,7 @@ func runWeb(
 				logging.L(ctx).Fatal("unable to wait for dev mode", zap.Error(err))
 			}
 
-			flags.DevMode.PrintBanner(os.Stdout, cfg.Web.Addr)
+			_ = flags.DevMode.PrintBanner(os.Stdout, cfg.Web.Addr)
 		}()
 	}
 

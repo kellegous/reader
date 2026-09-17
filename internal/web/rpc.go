@@ -10,11 +10,12 @@ import (
 	"connectrpc.com/connect"
 	"github.com/kellegous/glue/logging"
 	"github.com/kellegous/poop"
-	"github.com/kellegous/reader/internal/plaintext"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"miniflux.app/v2/client"
+
+	"github.com/kellegous/reader/internal/plaintext"
 
 	"github.com/kellegous/reader"
 	"github.com/kellegous/reader/reader_connect"

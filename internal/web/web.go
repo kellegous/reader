@@ -13,6 +13,7 @@ import (
 	_ "embed"
 
 	"connectrpc.com/connect"
+	"github.com/kellegous/glue/fn"
 	"github.com/kellegous/glue/metrics"
 	"go.uber.org/zap"
 	"miniflux.app/v2/client"
@@ -151,7 +152,7 @@ func newSessionRefresher(beURL *url.URL, headers map[string]string) http.Handler
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer res.Body.Close()
+		defer fn.WithAbandon(res.Body.Close)
 
 		if res.StatusCode >= http.StatusBadRequest {
 			http.Error(w, res.Status, res.StatusCode)

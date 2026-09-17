@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/kellegous/reader/reader_connect"
 	"github.com/spf13/cobra"
+
+	"github.com/kellegous/reader/reader_connect"
 )
 
 type Codec int

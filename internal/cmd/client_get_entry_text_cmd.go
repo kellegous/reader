@@ -6,8 +6,9 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/kellegous/poop"
-	"github.com/kellegous/reader"
 	"github.com/spf13/cobra"
+
+	"github.com/kellegous/reader"
 )
 
 func clientGetEntryTextCmd(flags *clientFlags) *cobra.Command {

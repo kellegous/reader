@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"al.essio.dev/pkg/shellescape"
+	"github.com/kellegous/glue/fn"
 	"github.com/kellegous/poop"
 	_ "github.com/lib/pq"
 )
@@ -71,7 +72,7 @@ func (s *Server) EnsureDatabase(
 	name string,
 	username string,
 	password string,
-) error {
+) (err error) {
 	// TODO(knorton): limit name, username, password to valid characters
 	q := fmt.Sprintf(`
 		CREATE USER %s WITH ENCRYPTED PASSWORD '%s';
@@ -90,7 +91,7 @@ func (s *Server) EnsureDatabase(
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer fn.WithCare(db.Close, &err)
 
 	if err := db.PingContext(ctx); err != nil {
 		return err

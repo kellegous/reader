@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/kellegous/glue/fn"
 	"github.com/kellegous/poop"
 	"miniflux.app/v2/client"
 )
@@ -51,7 +52,7 @@ func (s *Server) BaseURL() string {
 func (s *Server) provisionAuthProxyUser(
 	ctx context.Context,
 	user string,
-) error {
+) (err error) {
 	jar, err := cookiejar.New(&cookiejar.Options{})
 	if err != nil {
 		return poop.Chain(err)
@@ -74,7 +75,7 @@ func (s *Server) provisionAuthProxyUser(
 	if err != nil {
 		return poop.Chain(err)
 	}
-	defer res.Body.Close()
+	defer fn.WithCare(res.Body.Close, &err)
 
 	if res.StatusCode != http.StatusOK {
 		return poop.Newf("status %d for auth proxy user: %s", res.StatusCode, user)
@@ -97,7 +98,9 @@ func ensureAPIKeyFor(
 	if err != nil {
 		return nil, poop.Chain(err)
 	}
-	defer db.Close(ctx)
+	defer func() {
+		_ = db.Close(ctx)
+	}()
 
 	var key client.APIKey
 	if err := db.QueryRow(
@@ -168,11 +171,11 @@ func (s *Server) ProvisionUser(
 func (s *Server) WaitForReady(
 	ctx context.Context,
 	timeout time.Duration,
-) error {
+) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	doCheck := func() error {
+	doCheck := func() (err error) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.BaseURL()+"/liveness", nil)
 		if err != nil {
 			return poop.Chain(err)
@@ -182,7 +185,7 @@ func (s *Server) WaitForReady(
 		if err != nil {
 			return poop.Chain(err)
 		}
-		defer res.Body.Close()
+		defer fn.WithCare(res.Body.Close, &err)
 
 		if res.StatusCode != http.StatusOK {
 			return poop.Newf("status %d for liveness check", res.StatusCode)

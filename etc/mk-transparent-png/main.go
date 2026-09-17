@@ -6,6 +6,8 @@ import (
 	"image"
 	"image/png"
 	"os"
+
+	"github.com/kellegous/glue/fn"
 )
 
 func main() {
@@ -25,7 +27,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "create transparent.png: %v\n", err)
 		os.Exit(1)
 	}
-	defer file.Close()
+	defer fn.WithAbandon(file.Close)
 
 	if err := png.Encode(file, image.NewNRGBA(image.Rect(0, 0, size, size))); err != nil {
 		fmt.Fprintf(os.Stderr, "encode transparent.png: %v\n", err)

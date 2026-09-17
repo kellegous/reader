@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kellegous/glue/fn"
 	"gopkg.in/yaml.v3"
 )
 
@@ -45,11 +46,11 @@ func (n *Info) Read(r io.Reader, base string) error {
 	return nil
 }
 
-func (n *Info) ReadFile(src string) error {
+func (n *Info) ReadFile(src string) (err error) {
 	r, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	defer r.Close()
+	defer fn.WithCare(r.Close, &err)
 	return n.Read(r, filepath.Dir(src))
 }
