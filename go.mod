@@ -10,6 +10,7 @@ require (
 	github.com/kellegous/poop v0.8.0
 	github.com/lib/pq v1.12.3
 	github.com/spf13/cobra v1.10.2
+	github.com/spf13/pflag v1.0.9
 	go.uber.org/zap v1.28.0
 	golang.org/x/net v0.59.0
 	google.golang.org/protobuf v1.36.12
@@ -35,7 +36,6 @@ require (
 	github.com/prometheus/common v0.70.0 // indirect
 	github.com/prometheus/procfs v0.21.1 // indirect
 	github.com/rogpeppe/go-internal v1.16.0 // indirect
-	github.com/spf13/pflag v1.0.9 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/text v0.42.0 // indirect

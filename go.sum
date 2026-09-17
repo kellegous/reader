@@ -30,8 +30,6 @@ github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/kellegous/buildname v0.2.0 h1:vQO62l+qusi3YZOsRbaLrGY7cfV9DQCFOqf1XqnlnyM=
 github.com/kellegous/buildname v0.2.0/go.mod h1:jJQW87nd//T+AcadeUOzD3YWEtU1z0dOkkdatYtnQZA=
-github.com/kellegous/glue v0.31.1-0.20260912125846-6066891ed88a h1:WybnMOpiJL3Bzp8qb8vGmmt2Y1CXbaL05Cn0E4Ftd6k=
-github.com/kellegous/glue v0.31.1-0.20260912125846-6066891ed88a/go.mod h1:pFJ9mXImyLc+fsf0Hu64FmAvjhvrI1HGH1t1l9SAeOs=
 github.com/kellegous/glue v0.31.1-0.20260916215339-15f9a4f253a6 h1:Wgk6YZABosZuTOFBejbMcKtXizhIhTFZg4ZIRNSn+gc=
 github.com/kellegous/glue v0.31.1-0.20260916215339-15f9a4f253a6/go.mod h1:pFJ9mXImyLc+fsf0Hu64FmAvjhvrI1HGH1t1l9SAeOs=
 github.com/kellegous/poop v0.8.0 h1:Ipxk7nlTK/OAdsOnSMzjB9rW2RpfI4DOVyvjEe5JDBA=
