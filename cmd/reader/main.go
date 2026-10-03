@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/kellegous/glue/logging/yarder/zap"
 	"github.com/kellegous/poop"
+
 	"github.com/kellegous/reader/internal/cmd"
 )
 

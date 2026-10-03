@@ -1,8 +1,4 @@
-PROTOC_GEN_GO_VERSION := v1.36.10
-PROTOC_GEN_CONNECT_GO_VERSION := v1.19.1
-PROTOC_VERSION := 34.1
-GOLANGCI_LINT_VERSION := v2.13.1
-GOIMPORTS_VERSION := v0.49.0
+include tools.mk
 
 SHA = $(shell go run github.com/kellegous/glue/build/info@latest --format="{{.SHA}}")
 BUILD_NAME = $(shell go run github.com/kellegous/glue/build/info@latest --format="{{.Name}}")
