@@ -2,7 +2,7 @@ package config
 
 const (
 	DefaultOllamaURL   = "http://localhost:11434"
-	DefaultOllamaModel = "gemma3:27b"
+	DefaultOllamaModel = "gpt-5-mini"
 )
 
 type Ollama struct {

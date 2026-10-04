@@ -13,8 +13,6 @@ import {
 import { Week, Weekday } from "../time";
 import { Summarizer } from "./summarizer";
 
-const defaultModel = "gpt-5-mini";
-
 export interface ModelState {
   client: Client<typeof Reader>;
   until: Date;
@@ -136,11 +134,11 @@ const getSummarizer = async (config: Config): Promise<Summarizer | null> => {
     return null;
   }
   const { url, model } = config.ollama!;
-  if (!url) {
+  if (!url || !model) {
     return null;
   }
 
-  return await Summarizer.createIfAvailable(url, model || defaultModel);
+  return await Summarizer.createIfAvailable(url, model);
 };
 
 const toEntry = (
