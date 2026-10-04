@@ -13,7 +13,7 @@ import {
 import { Week, Weekday } from "../time";
 import { Summarizer } from "./summarizer";
 
-const defaultModel = "gemma4:e4b";
+const defaultModel = "gpt-5-mini";
 
 export interface ModelState {
   client: Client<typeof Reader>;
