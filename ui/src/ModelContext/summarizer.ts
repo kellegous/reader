@@ -10,13 +10,17 @@ export interface Message {
   content: string;
 }
 
-interface Event {
-  created_at: string;
-  done: boolean;
-  message: Message;
-  done_reason: string;
-  model: string;
+interface ChatCompletionChunk {
+  choices: {
+    index: number;
+    delta: { content?: string | null };
+  }[];
 }
+
+const apiUrl = (baseUrl: string, path: string) => {
+  const base = baseUrl.replace(/\/+$/, "");
+  return `${base.endsWith("/v1") ? base : `${base}/v1`}/${path}`;
+};
 
 export class Summarizer {
   constructor(
@@ -42,7 +46,10 @@ export class Summarizer {
     model: string,
   ): Promise<Summarizer | null> {
     try {
-      await fetch(`${baseUrl}/api/ps`);
+      const response = await fetch(apiUrl(baseUrl, "models"));
+      if (!response.ok) {
+        return null;
+      }
       return new Summarizer(
         createClient(
           Reader,
@@ -72,7 +79,7 @@ const requestSummary = (baseUrl: string, model: string, content: string) => {
     },
   ];
 
-  return fetch(`${baseUrl}/api/chat`, {
+  return fetch(apiUrl(baseUrl, "chat/completions"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -89,26 +96,55 @@ const streamSummary = async (
   res: Response,
   setSummary: (summary: string) => void,
 ) => {
+  if (!res.ok) {
+    throw new Error(`Summary request failed: ${res.status} ${res.statusText}`);
+  }
+
   const reader = res.body?.getReader();
   if (!reader) {
     return "";
   }
 
-  try {
-    let summary = "";
-    while (true) {
-      const chunk = await reader.read();
-      try {
-        const event: Event = JSON.parse(new TextDecoder().decode(chunk.value));
-        summary += event.message.content;
-        setSummary(summary);
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let summary = "";
 
-        if (event.done) {
+  const processLine = (line: string) => {
+    if (!line.startsWith("data:")) {
+      return false;
+    }
+    const data = line.slice(5).trim();
+    if (data === "[DONE]") {
+      return true;
+    }
+    if (!data) {
+      return false;
+    }
+
+    const event: ChatCompletionChunk = JSON.parse(data);
+    const content = event.choices.find((choice) => choice.index === 0)?.delta.content;
+    if (content) {
+      summary += content;
+      setSummary(summary);
+    }
+    return false;
+  };
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      buffer += decoder.decode(value, { stream: !done });
+      let newline: number;
+      while ((newline = buffer.indexOf("\n")) !== -1) {
+        const line = buffer.slice(0, newline);
+        buffer = buffer.slice(newline + 1);
+        if (processLine(line)) {
           return summary;
         }
-      } catch (e) {
-        console.error(new TextDecoder().decode(chunk.value));
-        throw e;
+      }
+      if (done) {
+        processLine(buffer);
+        return summary;
       }
     }
   } finally {
