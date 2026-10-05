@@ -17,7 +17,11 @@ service Reader {
 
 message GetEntryTextRequest { int64 entry_id = 1; }
 
-message GetEntryTextResponse { string text = 1; }
+message GetEntryTextResponse {
+  string text = 1;
+  string title = 2;
+  string author = 3;
+}
 
 message GetEntriesRequest {
   enum SortKey {

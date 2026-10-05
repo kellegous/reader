@@ -110,7 +110,9 @@ func (r *rpc) GetEntryText(
 	}
 
 	return connect.NewResponse(&reader.GetEntryTextResponse{
-		Text: plaintext.From(entry.Content),
+		Text:   plaintext.From(entry.Content),
+		Title:  entry.Title,
+		Author: entry.Author,
 	}), nil
 }
 
