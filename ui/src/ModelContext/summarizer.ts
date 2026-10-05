@@ -1,7 +1,7 @@
 import { Client, createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { withSource } from "../withSource";
 import { Reader } from "../gen/reader_pb";
+import { withSource } from "../withSource";
 
 export type Role = "user" | "assistant" | "system";
 
@@ -22,6 +22,15 @@ const apiUrl = (baseUrl: string, path: string) => {
   return `${base.endsWith("/v1") ? base : `${base}/v1`}/${path}`;
 };
 
+const buildContent = (text: string, title: string, author: string) => {
+  return `
+    # ${title}
+    ## Author: ${author}
+
+    Text: ${text}
+  `;
+};
+
 export class Summarizer {
   constructor(
     private readonly client: Client<typeof Reader>,
@@ -34,9 +43,9 @@ export class Summarizer {
     setSummary: (summary: string) => void,
   ): Promise<string> {
     const { client, baseUrl, model } = this;
-    const { text } = await client.getEntryText({ entryId });
+    const { text, title, author } = await client.getEntryText({ entryId });
     return streamSummary(
-      await requestSummary(baseUrl, model, text),
+      await requestSummary(baseUrl, model, buildContent(text, title, author)),
       setSummary,
     );
   }
@@ -122,7 +131,8 @@ const streamSummary = async (
     }
 
     const event: ChatCompletionChunk = JSON.parse(data);
-    const content = event.choices.find((choice) => choice.index === 0)?.delta.content;
+    const content = event.choices.find((choice) => choice.index === 0)?.delta
+      .content;
     if (content) {
       summary += content;
       setSummary(summary);
