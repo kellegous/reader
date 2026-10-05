@@ -15,6 +15,8 @@ BE_PROTOS := \
 FE_PROTOS := \
 	ui/src/gen/reader_pb.ts
 
+GENERATED := $(BE_PROTOS) $(ASSETS)
+
 .PHONY: all clean develop nuke
 
 .PRECIOUS: $(BE_PROTOS)
@@ -24,13 +26,13 @@ ALL: bin/reader
 develop: bin/reader
 	bin/reader server --dev-mode=.:4041
 
-test:
-	go test ./...
+test: $(GENERATED)
+	go test ./internal/...
 
-lint: bin/golangci-lint
+lint: bin/golangci-lint $(GENERATED)
 	bin/golangci-lint run
 
-fmt: bin/goimports
+fmt: bin/goimports $(GENERATED)
 	find . -path './node_modules' -prune -o -type f -name '*.go' -exec bin/goimports -local $(GO_MOD) -w {} +
 
 validate: test lint fmt
