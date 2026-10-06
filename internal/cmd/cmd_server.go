@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/kellegous/glue/build"
 	"github.com/kellegous/glue/devmode"
 	"github.com/kellegous/glue/fn"
 	"github.com/kellegous/glue/logging"
@@ -107,9 +108,6 @@ func runServer(cmd *cobra.Command, flags *serverFlags) (err error) {
 	ctx, done := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
 	defer done()
 
-	lg.Info("starting reader",
-		zap.String("postgress.data-dir", cfg.Postgres.DataDir))
-
 	pg, err := ensurePostgresReady(ctx, &cfg.Postgres)
 	if err != nil {
 		return poop.Chain(err)
@@ -117,8 +115,6 @@ func runServer(cmd *cobra.Command, flags *serverFlags) (err error) {
 	defer func() {
 		_ = pg.Stop(context.Background())
 	}()
-
-	lg.Info("postgres started", zap.Int("pid", pg.GetPid()))
 
 	mf, err := startMiniflux(
 		ctx,
@@ -129,6 +125,16 @@ func runServer(cmd *cobra.Command, flags *serverFlags) (err error) {
 		return poop.Chain(err)
 	}
 	defer fn.WithAbandon(mf.Stop)
+
+	{
+		bs := build.ReadSummary()
+		lg.Info("reader started",
+			zap.String("sha", bs.SHA),
+			zap.String("name", bs.Name),
+			zap.Int("postgres.pid", pg.GetPid()),
+			zap.String("postgress.data-dir", cfg.Postgres.DataDir),
+			zap.Int("miniflux.pid", mf.GetPid()))
+	}
 
 	ch := make(chan error, 1)
 

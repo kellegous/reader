@@ -27,6 +27,10 @@ func (s *Server) Stop() error {
 	return s.proc.Kill()
 }
 
+func (s *Server) GetPid() int {
+	return s.proc.Pid
+}
+
 func (s *Server) Client(opts ...client.Option) *client.Client {
 	if a := s.opts.admin; a != nil {
 		opts = append(opts, client.WithCredentials(a.username, a.password))
