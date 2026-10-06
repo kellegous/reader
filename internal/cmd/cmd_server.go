@@ -118,8 +118,7 @@ func runServer(cmd *cobra.Command, flags *serverFlags) (err error) {
 		_ = pg.Stop(context.Background())
 	}()
 
-	// TODO(knorton): get pid from postgres
-	lg.Info("postgres started", zap.Int("pid", 0))
+	lg.Info("postgres started", zap.Int("pid", pg.GetPid()))
 
 	mf, err := startMiniflux(
 		ctx,

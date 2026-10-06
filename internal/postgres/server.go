@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"database/sql"
@@ -25,10 +26,27 @@ type Server struct {
 	dataDir   string
 	pgBinDir  string
 	pgVersion int
+	pid       int
 }
 
 func (s *Server) pgDataDir() string {
 	return filepath.Join(s.dataDir, strconv.Itoa(s.pgVersion))
+}
+
+func getPostmasterPid(dataDir string) (_ int, err error) {
+	f, err := os.Open(filepath.Join(dataDir, "postmaster.pid"))
+	if err != nil {
+		return 0, poop.Chain(err)
+	}
+	defer fn.WithCare(f.Close, &err)
+
+	s := bufio.NewScanner(f)
+	s.Scan()
+	if err := s.Err(); err != nil {
+		return 0, poop.Chain(err)
+	}
+
+	return strconv.Atoi(strings.TrimSpace(s.Text()))
 }
 
 func Start(
@@ -64,7 +82,16 @@ func Start(
 		return nil, poop.Chain(err)
 	}
 
+	s.pid, err = getPostmasterPid(s.pgDataDir())
+	if err != nil {
+		return nil, poop.Chain(err)
+	}
+
 	return s, nil
+}
+
+func (s *Server) GetPid() int {
+	return s.pid
 }
 
 func (s *Server) EnsureDatabase(
