@@ -1,10 +1,10 @@
 module github.com/kellegous/reader
 
-go 1.27.1
+go 1.27.2
 
 require (
 	al.essio.dev/pkg/shellescape v1.6.1
-	connectrpc.com/connect v1.21.0
+	connectrpc.com/connect v1.21.1
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/kellegous/glue v0.34.0
 	github.com/kellegous/poop v0.8.0
@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	go.uber.org/zap v1.28.0
-	golang.org/x/net v0.59.0
+	golang.org/x/net v0.61.0
 	google.golang.org/protobuf v1.36.12
 	gopkg.in/yaml.v3 v3.0.1
 	miniflux.app/v2 v2.3.3
@@ -37,6 +37,6 @@ require (
 	github.com/prometheus/procfs v0.21.1 // indirect
 	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 )
