@@ -6,7 +6,7 @@ require (
 	al.essio.dev/pkg/shellescape v1.6.1
 	connectrpc.com/connect v1.21.1
 	github.com/jackc/pgx/v5 v5.11.0
-	github.com/kellegous/glue v0.34.0
+	github.com/kellegous/glue v0.37.0
 	github.com/kellegous/poop v0.8.0
 	github.com/lib/pq v1.12.3
 	github.com/spf13/cobra v1.10.2
