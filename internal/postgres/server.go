@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"os/user"
@@ -136,23 +137,42 @@ func (s *Server) Stop(ctx context.Context) error {
 		"stop").Run()
 }
 
+func chownTree(root string, uid, gid int) error {
+	resolvedRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return poop.Chain(err)
+	}
+
+	return filepath.WalkDir(
+		resolvedRoot,
+		func(path string, _ fs.DirEntry, err error) error {
+			if err != nil {
+				return poop.Chain(err)
+			}
+			return poop.Chain(os.Lchown(path, uid, gid))
+		})
+}
+
 func (s *Server) initDB(ctx context.Context) error {
 	dataDir := s.pgDataDir()
 	versionPath := filepath.Join(dataDir, "PG_VERSION")
-	if _, err := os.Stat(versionPath); err == nil {
-		return nil
-	}
 
 	uid, gid, err := getUser(pgUser)
 	if err != nil {
 		return poop.Chain(err)
 	}
 
+	if _, err := os.Stat(versionPath); err == nil {
+		// it has happened that the postgres user changes
+		// uid/gid in the base image.
+		return poop.Chain(chownTree(dataDir, uid, gid))
+	}
+
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return poop.Chain(err)
 	}
 
-	if err := os.Chown(dataDir, uid, gid); err != nil {
+	if err := chownTree(dataDir, uid, gid); err != nil {
 		return poop.Chain(err)
 	}
 
