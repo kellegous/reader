@@ -7,7 +7,7 @@ require (
 	connectrpc.com/connect v1.21.1
 	github.com/jackc/pgx/v5 v5.13.0
 	github.com/kellegous/glue v0.40.0
-	github.com/kellegous/poop v0.8.0
+	github.com/kellegous/poop v0.10.0
 	github.com/lib/pq v1.12.3
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.1.0
@@ -28,7 +28,7 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/kellegous/buildname v0.2.0 // indirect
 	github.com/kellegous/tdfiglet v0.3.0 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pandatix/go-abnf v0.5.5 // indirect
